@@ -1,0 +1,9 @@
+<package> 
+    <description brief="gazebo simulation plugins for rock integration"> 
+         This package contains gazebo plugins used to communicate with rock/orogen components.
+These plugins must be loaded inside gazebo model files.
+    </description>
+    <author>Thomio/thomio.watanabe@fieb.org.br</author> 
+    <license>GNU_GPLv2</license> 
+    <url>https://github.com/Thomio-Watanabe/simulation-gazebo_plugins-rock</url> 
+</package> 
