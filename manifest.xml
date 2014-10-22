@@ -5,5 +5,5 @@ These plugins must be loaded inside gazebo model files.
     </description>
     <author>Thomio/thomio.watanabe@fieb.org.br</author> 
     <license>GNU_GPLv2</license> 
-    <url>https://github.com/Thomio-Watanabe/simulation-gazebo_plugins-rock</url> 
+    <url> </url> 
 </package> 
