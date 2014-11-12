@@ -1,8 +1,0 @@
-
-To do: 
-
-ok	1 - Write a dicent CMakeFile for gazebo plugins 
-ok	2 - Add SDF dependency in gazebo installation
-ok	3 - SET gazebo environment variables automaticaly (.bahsrc?) 
-ok	4 - Add gazebo-rock plugins dependency with gazebo installation
-	5 - export the gazebo plugin folder or install these plugins in the right folder or install gazebo plugins folder in rock
