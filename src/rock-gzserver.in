@@ -1,0 +1,4 @@
+#! /bin/sh
+
+gzserver -s @CMAKE_INSTALL_PREFIX@/lib/libRockBridgePlugin.so "$@"
+
