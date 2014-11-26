@@ -1,4 +1,3 @@
-
 #ifndef _ROCK_BRIDGE_HPP_
 #define _ROCK_BRIDGE_HPP_
 
@@ -9,14 +8,15 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
 // Rock Headers
-// #include <rtt/RTT.hpp>
 #include <rtt/types/TypekitRepository.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
-// Rock DCMotor headers
-#include <orocos/gazebo/DCMotorTask.hpp>
-// #include <stdio.h>
+
+namespace gazebo
+{
+	class ModelTask; 
+}
 
 namespace gazebo
 {
@@ -25,25 +25,23 @@ namespace gazebo
 		public:
 			// Pure virtual function implementation
 			void Load(int _argc = 0, char **_argv = NULL);
-
-		private:
-			RTT::TaskContext* dc_motor_task;
-			RTT::Activity* activity_dcmotor;
-
-			std::vector<event::ConnectionPtr> endUpdate;
+			~RockBridge(); 
 			
-			physics::JointPtr robot_left_joint;
-			physics::JointPtr robot_right_joint;
-			RTT::InputPort<double> *dc_motor_port;
-
+		private:
 			void worldCreated(std::string const& worldName);
-			// void updateBegin(gazebo::common::UpdateInfo const& info);
+			void updateBegin(gazebo::common::UpdateInfo const& info);
 			void updateEnd();
-			void initRockDCMotor();
-			void applyForce(double);
+
+			std::vector<event::ConnectionPtr> eventHandler;
+
+			typedef std::vector<gazebo::ModelTask*> ModelTasks;
+			ModelTasks tasks;
+			
+			typedef std::vector<RTT::Activity*> Activities;
+			Activities activities;
 	};
 	
-    // Register this plugin with the simulator
+ 	// Register this plugin with the simulator
 	GZ_REGISTER_SYSTEM_PLUGIN(RockBridge)
 }
 

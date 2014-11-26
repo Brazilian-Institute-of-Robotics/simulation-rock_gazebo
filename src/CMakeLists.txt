@@ -20,7 +20,9 @@ rock_library(RockBridgePlugin
 	DEPS_CMAKE Boost)
 
 configure_file(rock-gzserver.in rock-gzserver @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rock-gzserver
+configure_file(rock-gazebo.in rock-gazebo @ONLY)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rock-gzserver ${CMAKE_CURRENT_BINARY_DIR}/rock-gazebo
         DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_EXECUTE
