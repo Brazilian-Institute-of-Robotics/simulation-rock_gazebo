@@ -1,3 +1,8 @@
+//======================================================================================
+// Brazilian Institute of Robotics 
+// Authors: Thomio Watanabe
+// Date: December 2014
+//====================================================================================== 
 #ifndef _ROCK_BRIDGE_HPP_
 #define _ROCK_BRIDGE_HPP_
 
@@ -12,9 +17,12 @@
 #include <rtt/transports/corba/TaskContextServer.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/Activity.hpp>
+//#include <rtt/extras/SlaveActivity.hpp>
 
-namespace gazebo
-{
+#define GROUND 0
+#define UNDERWATER 1
+
+namespace gazebo{
 	class ModelTask; 
 }
 
@@ -24,19 +32,28 @@ namespace gazebo
 	{
 		public:
 			// Pure virtual function implementation
-			void Load(int _argc = 0, char **_argv = NULL);
-			~RockBridge(); 
+			virtual void Load(int _argc = 0, char **_argv = NULL);
+//			virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
+			RockBridge(); 
+			~RockBridge();
 			
 		private:
-			void worldCreated(std::string const& worldName);
+			void worldCreated(std::string const&);
+			void modelAdded(std::string const&);
+			void createTask(gazebo::physics::WorldPtr, gazebo::physics::ModelPtr,int); 
 			void updateBegin(gazebo::common::UpdateInfo const& info);
 			void updateEnd();
 
+			gazebo::ModelTask* task;
 			std::vector<event::ConnectionPtr> eventHandler;
+
+			typedef std::vector<gazebo::physics::WorldPtr> WorldContainer; 
+			WorldContainer worlds; 
 
 			typedef std::vector<gazebo::ModelTask*> ModelTasks;
 			ModelTasks tasks;
 			
+//			typedef std::vector<RTT::extras::SlaveActivity*> Activities;
 			typedef std::vector<RTT::Activity*> Activities;
 			Activities activities;
 	};
@@ -47,3 +64,5 @@ namespace gazebo
 
 
 #endif
+
+

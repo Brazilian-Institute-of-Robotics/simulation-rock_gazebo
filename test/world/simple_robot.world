@@ -1,6 +1,6 @@
 <?xml version="1.0"?> 
 <sdf version="1.4">
-    <world name="default">
+    <world name="my_world">
         <!-- Ground Plane -->
         <include>
             <uri>model://ground_plane</uri>
@@ -124,7 +124,7 @@
                     <xyz>0 1 0</xyz>
                 </axis>
             </joint>
-
-        </model>
+            
+        </model>        
     </world>
 </sdf>
