@@ -27,7 +27,7 @@ using namespace gazebo;
 
 //======================================================================================
 
-void RockBridge::Load(int _argc , char **_argv)
+void RockBridge::Load(int _argc , char** _argv)
 {
 	RTT::corba::ApplicationServer::InitOrb(_argc, _argv);
 	
@@ -63,7 +63,7 @@ void RockBridge::Load(int _argc , char **_argv)
 					boost::bind(&RockBridge::modelAdded,this, _1)));
 }
 //======================================================================================
-// worldCreated() is called every time a world in inserted in gazebo
+// worldCreated() is called every time a world is added
 void RockBridge::worldCreated(std::string const& worldName)
 {
     gzmsg << "RockBridge: initializing world: " << worldName << std::endl;
@@ -172,7 +172,7 @@ RockBridge::~RockBridge()
 	
 	// Delete pointers to activity
 	for(Activities::iterator activity_it = activities.begin(); 
-		activity_it != activities.end(); ++activity_it)
+		    activity_it != activities.end(); ++activity_it)
 	{
 		delete *activity_it;
 	}
@@ -180,7 +180,7 @@ RockBridge::~RockBridge()
 	
 	// Delete pointers to tasks
 	for(ModelTasks::iterator task_it = tasks.begin();
-		task_it != tasks.end(); ++task_it)
+		    task_it != tasks.end(); ++task_it)
 	{
 		delete *task_it;
 	}
