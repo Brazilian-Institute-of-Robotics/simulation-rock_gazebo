@@ -28,6 +28,8 @@ namespace RTT
 namespace gazebo
 {
     class ModelTask; 
+    class WorldTask;
+
 	class RockBridge: public SystemPlugin
 	{
 		public:

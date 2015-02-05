@@ -6,6 +6,7 @@
 #include "RockBridge.hpp"
 
 #include <gazebo/ModelTask.hpp>
+#include <gazebo/WorldTask.hpp>
 
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
@@ -27,6 +28,7 @@
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+
 
 using namespace gazebo;
 
@@ -74,11 +76,11 @@ void RockBridge::worldCreated(std::string const& worldName)
 {
     gzmsg << "RockBridge: initializing world: " << worldName << std::endl;
 
-	physics::WorldPtr world = physics::get_world(worldName);
+    physics::WorldPtr world = physics::get_world(worldName);
     if (!world)
     {
-            gzerr << "RockBridge: cannot find world " << worldName << std::endl;
-            return;
+        gzerr << "RockBridge: cannot find world " << worldName << std::endl;
+        return;
     }
 
 	int environment = GROUND;
@@ -88,6 +90,11 @@ void RockBridge::worldCreated(std::string const& worldName)
 		environment = UNDERWATER; 
 		gzmsg << "RockBridge: underwater world detected. " << std::endl;
 	}	
+
+    WorldTask* world_task = new WorldTask();
+    world_task->setGazeboWorld(world);
+    setupTaskActivity(world_task);
+    tasks.push_back(world_task);
 		    
     typedef physics::Model_V Model_V;
     Model_V model_list = world->GetModels();
