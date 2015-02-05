@@ -22,6 +22,8 @@
 #include <gazebo/transports/typelib/TransportPlugin.hpp>
 #include <gazebo/transports/mqueue/TransportPlugin.hpp>
 
+#include <rtt/transports/corba/ApplicationServer.hpp>
+#include <rtt/transports/corba/TaskContextServer.hpp>
 
 using namespace gazebo;
 
@@ -30,6 +32,7 @@ using namespace gazebo;
 void RockBridge::Load(int _argc , char** _argv)
 {
 	RTT::corba::ApplicationServer::InitOrb(_argc, _argv);
+    RTT::corba::TaskContextServer::ThreadOrb(ORO_SCHED_OTHER, RTT::os::LowestPriority, 0);
 	
 	// Import typekits to allow RTT convert the types used by the components
 	RTT::types::TypekitRepository::Import(new orogen_typekits::stdTypekitPlugin);
@@ -187,7 +190,8 @@ RockBridge::~RockBridge()
 	tasks.clear();
 	
 	worlds.clear();
-//    RTT::corba::TaskContextServer::ShutdownOrb();
-//    RTT::corba::TaskContextServer::DestroyOrb();	
+
+    RTT::corba::TaskContextServer::ShutdownOrb();
+    RTT::corba::TaskContextServer::DestroyOrb();	
 }
 //======================================================================================
