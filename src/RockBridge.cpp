@@ -22,6 +22,9 @@
 #include <gazebo/transports/typelib/TransportPlugin.hpp>
 #include <gazebo/transports/mqueue/TransportPlugin.hpp>
 
+#include <rtt/base/ActivityInterface.hpp>
+#include <rtt/TaskContext.hpp>
+#include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 
@@ -120,6 +123,19 @@ void RockBridge::modelAdded(std::string const& modelName)
 //        }
 	}
 }
+void RockBridge::setupTaskActivity(RTT::TaskContext* task)
+{
+    // Export the component interface on CORBA to Ruby access the component
+    RTT::corba::TaskContextServer::Create( task );
+	
+    // Set up the component activityate_signal
+    RTT::extras::SequentialActivity* activity =
+        new RTT::extras::SequentialActivity(task->engine());
+    activity->start();
+    activities.push_back(activity);
+    tasks.push_back(task);
+}
+
 //======================================================================================
 void RockBridge::createTask(gazebo::physics::WorldPtr world, gazebo::physics::ModelPtr model, int environment)
 {
@@ -127,39 +143,21 @@ void RockBridge::createTask(gazebo::physics::WorldPtr world, gazebo::physics::Mo
 	gzmsg << "RockBridge: initializing model: "<< (model)->GetName() << std::endl;
 
 	// Create and initialize one rock component for each gazebo model
-	task = new gazebo::ModelTask();
-	tasks.push_back(task);
-	task->setGazeboModel(world, model, environment);
-	
-	// Export the component interface on CORBA to Ruby access the component
-	RTT::corba::TaskContextServer::Create( task );
-	
-	// Set up the component activityate_signal
-	RTT::Activity* activity = new RTT::Activity(
-			SCHED_OTHER,
-			RTT::os::LowestPriority,
-			0.0,
-			task->engine(),
-			"orogen_default_rock_gazebo");		
-//		RTT::extras::SlaveActivity* activity = new ModelActivity(task->engine());
-	
-	this->activities.push_back(activity);
+    ModelTask* task = new gazebo::ModelTask();
+    task->setGazeboModel(world, model, environment);
+    setupTaskActivity(task);
 }
 //======================================================================================
 // Callback method triggered every update begin
 // It test conditions and implement all rock components functionalities
 void RockBridge::updateBegin(common::UpdateInfo const& info)
 {
-	for(ModelTasks::iterator it = tasks.begin(); it != tasks.end(); ++it)
-	{
-		(*it)->updateModel();
-	}
-
-//	for (Activities::iterator it = activities.begin(); it != activities.end(); ++it)
-//	{
-//		(*it)->execute();
-//	}
+    for(Activities::iterator it = activities.begin(); it != activities.end(); ++it)
+    {
+        (*it)->trigger();
+    }
 }
+
 //======================================================================================
 void RockBridge::updateEnd()
 {
@@ -171,8 +169,6 @@ RockBridge::RockBridge()
 //======================================================================================
 RockBridge::~RockBridge()
 {
-	delete task;
-	
 	// Delete pointers to activity
 	for(Activities::iterator activity_it = activities.begin(); 
 		    activity_it != activities.end(); ++activity_it)
@@ -182,7 +178,7 @@ RockBridge::~RockBridge()
 	activities.clear();
 	
 	// Delete pointers to tasks
-	for(ModelTasks::iterator task_it = tasks.begin();
+	for(Tasks::iterator task_it = tasks.begin();
 		    task_it != tasks.end(); ++task_it)
 	{
 		delete *task_it;
