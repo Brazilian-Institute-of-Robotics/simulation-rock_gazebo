@@ -12,22 +12,24 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
-// Rock Headers
-#include <rtt/types/TypekitRepository.hpp>
-#include <rtt/transports/corba/TaskContextServer.hpp>
-#include <rtt/TaskContext.hpp>
-#include <rtt/Activity.hpp>
-//#include <rtt/extras/SlaveActivity.hpp>
 
 #define GROUND 0
 #define UNDERWATER 1
 
-namespace gazebo{
-	class ModelTask; 
+namespace RTT
+{
+    class TaskContext;
+    namespace base
+    {
+        class ActivityInterface;
+    }
 }
 
 namespace gazebo
 {
+    class ModelTask; 
+    class WorldTask;
+
 	class RockBridge: public SystemPlugin
 	{
 		public:
@@ -43,18 +45,16 @@ namespace gazebo
 			void createTask(gazebo::physics::WorldPtr, gazebo::physics::ModelPtr,int); 
 			void updateBegin(gazebo::common::UpdateInfo const& info);
 			void updateEnd();
+            void setupTaskActivity(RTT::TaskContext* task);
 
-			gazebo::ModelTask* task;
 			std::vector<event::ConnectionPtr> eventHandler;
 
+            typedef std::vector<RTT::TaskContext*> Tasks;
+            Tasks tasks;
+			typedef std::vector<RTT::base::ActivityInterface*> Activities;
 			typedef std::vector<gazebo::physics::WorldPtr> WorldContainer; 
 			WorldContainer worlds; 
 
-			typedef std::vector<gazebo::ModelTask*> ModelTasks;
-			ModelTasks tasks;
-			
-//			typedef std::vector<RTT::extras::SlaveActivity*> Activities;
-			typedef std::vector<RTT::Activity*> Activities;
 			Activities activities;
 	};
 	
