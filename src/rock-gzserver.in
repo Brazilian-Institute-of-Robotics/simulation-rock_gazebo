@@ -1,4 +1,4 @@
 #! /bin/sh
 
-gzserver --verbose -s @CMAKE_INSTALL_PREFIX@/lib/libRockBridgePlugin.so "$@"
+gzserver --verbose -s @CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so "$@"
 

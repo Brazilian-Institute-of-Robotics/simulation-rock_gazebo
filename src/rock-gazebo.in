@@ -1,4 +1,4 @@
 #! /bin/sh
 
-gazebo --verbose -s @CMAKE_INSTALL_PREFIX@/lib/libRockBridgePlugin.so "$@"
+gazebo --verbose -s @CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so "$@"
 

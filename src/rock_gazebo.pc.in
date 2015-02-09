@@ -3,9 +3,10 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: RockBridgePlugin
+Name: @TARGET_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 Requires: @PKGCONFIG_REQUIRES@
-Libs: @PKGCONFIG_LIBS@
-Cflags: @PKGCONFIG_CFLAGS@
+Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@
+Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+
