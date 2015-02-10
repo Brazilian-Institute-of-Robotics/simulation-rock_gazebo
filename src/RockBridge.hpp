@@ -12,9 +12,6 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
 
-#define GROUND 0
-#define UNDERWATER 1
-
 namespace RTT
 {
     class TaskContext;
@@ -34,28 +31,27 @@ namespace rock_gazebo
 	{
 		public:
 			// Pure virtual function implementation
-			virtual void Load(int _argc = 0, char **_argv = NULL);
+			virtual void Load(int _argc = 0, char** _argv = NULL);
 //			virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
 			RockBridge(); 
 			~RockBridge();
 			
 		private:
 			void worldCreated(std::string const&);
-			void modelAdded(std::string const&);
-			void createTask(gazebo::physics::WorldPtr, gazebo::physics::ModelPtr,int); 
+//			void modelAdded(std::string const&);
+			void createTask(gazebo::physics::WorldPtr, gazebo::physics::ModelPtr); 
 			void updateBegin(gazebo::common::UpdateInfo const& info);
 			void updateEnd();
             void setupTaskActivity(RTT::TaskContext* task);
 
 			std::vector<gazebo::event::ConnectionPtr> eventHandler;
 
-            typedef std::vector<RTT::TaskContext*> Tasks;
-            Tasks tasks;
+//          typedef std::vector<RTT::TaskContext*> Tasks;
+//          Tasks tasks;
 			typedef std::vector<RTT::base::ActivityInterface*> Activities;
-			typedef std::vector<gazebo::physics::WorldPtr> WorldContainer; 
-			WorldContainer worlds; 
-
 			Activities activities;
+//			typedef std::vector<gazebo::physics::WorldPtr> WorldContainer; 
+//			WorldContainer worlds; 
 	};
 	
  	// Register this plugin with the simulator
