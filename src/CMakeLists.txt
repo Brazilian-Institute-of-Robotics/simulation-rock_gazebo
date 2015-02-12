@@ -1,4 +1,4 @@
-rock_library(RockBridgePlugin
+rock_library(rock_gazebo
 	SOURCES RockBridge.cpp
 	HEADERS RockBridge.hpp
 	DEPS_PKGCONFIG gazebo

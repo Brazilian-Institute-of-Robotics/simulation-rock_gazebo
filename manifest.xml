@@ -1,8 +1,17 @@
-<package> 
-    <description brief="gazebo simulation plugins for rock integration"> 
-         This package contains gazebo plugins used to communicate with Rock components.
-    </description>
-    <author>Thomio/thomio.watanabe@fieb.org.br</author> 
-    <license>GNU_GPLv2</license> 
-    <url> </url> 
-</package> 
+<package>
+  <description brief="Rock gazebo bridge package">
+  This package integrates the gazebo simulator and the Rock framework.
+  </description>
+  <author>Thomio Watanabe/thomio.watanabe@fieb.org.br</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+  <depend package="base/cmake" />
+  <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+  -->
+</package>
