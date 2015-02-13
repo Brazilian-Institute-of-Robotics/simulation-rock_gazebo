@@ -1,7 +1,3 @@
-//======================================================================================
-// Brazilian Institute of Robotics 
-// Authors: Thomio Watanabe
-// Date: December 2014
 //====================================================================================== 
 #include "RockBridge.hpp"
 
@@ -31,6 +27,7 @@
 
 
 using namespace gazebo;
+using namespace rock_gazebo;
 
 //======================================================================================
 
@@ -120,15 +117,15 @@ void RockBridge::modelAdded(std::string const& modelName)
 			gzmsg << "RockBridge: underwater world detected. " << std::endl;
 		}	
 
-//        if(gazebo::physics::ModelPtr model = (*world_it)->GetModel(modelName))
+//        if(physics::ModelPtr model = (*world_it)->GetModel(modelName))
 //        {
-////          gazebo::physics::BasePtr model_base = (*world_it)->GetByName(modelName);
-////		  gazebo::physics::ModelPtr model(new gazebo::physics::Model(model_base));
+////          physics::BasePtr model_base = (*world_it)->GetByName(modelName);
+////		  physics::ModelPtr model(new physics::Model(model_base));
 
 //            gzmsg << "Model name: " << model->GetName() << std::endl;  		    
 //		    createTask(*world_it, model, environment);
 //        }
-	}
+        }
 }
 void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 {
@@ -144,13 +141,13 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 }
 
 //======================================================================================
-void RockBridge::createTask(gazebo::physics::WorldPtr world, gazebo::physics::ModelPtr model, int environment)
+void RockBridge::createTask(physics::WorldPtr world, physics::ModelPtr model, int environment)
 {
 	std::cout << " ~ " << std::endl;
 	gzmsg << "RockBridge: initializing model: "<< (model)->GetName() << std::endl;
 
-	// Create and initialize one rock component for each gazebo model
-    ModelTask* task = new gazebo::ModelTask();
+        // Create and initialize one rock component for each gazebo model
+    ModelTask* task = new ModelTask();
     task->setGazeboModel(world, model, environment);
     setupTaskActivity(task);
 }

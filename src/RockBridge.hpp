@@ -1,7 +1,6 @@
 //======================================================================================
 // Brazilian Institute of Robotics 
 // Authors: Thomio Watanabe
-// Date: December 2014
 //====================================================================================== 
 #ifndef _ROCK_BRIDGE_HPP_
 #define _ROCK_BRIDGE_HPP_
@@ -29,8 +28,12 @@ namespace gazebo
 {
     class ModelTask; 
     class WorldTask;
+}
 
-	class RockBridge: public SystemPlugin
+namespace rock_gazebo
+{
+
+	class RockBridge: public gazebo::SystemPlugin
 	{
 		public:
 			// Pure virtual function implementation
@@ -47,7 +50,7 @@ namespace gazebo
 			void updateEnd();
             void setupTaskActivity(RTT::TaskContext* task);
 
-			std::vector<event::ConnectionPtr> eventHandler;
+			std::vector<gazebo::event::ConnectionPtr> eventHandler;
 
             typedef std::vector<RTT::TaskContext*> Tasks;
             Tasks tasks;
@@ -60,9 +63,7 @@ namespace gazebo
 	
  	// Register this plugin with the simulator
 	GZ_REGISTER_SYSTEM_PLUGIN(RockBridge)
-}
 
+} // end namespace rock_gazebo
 
 #endif
-
-
