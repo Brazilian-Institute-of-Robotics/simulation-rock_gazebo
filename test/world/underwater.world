@@ -12,5 +12,16 @@
 		<include>
 			<uri>model://flatfish</uri>
 		</include>
+
+        <plugin name="underwater" filename="libgazebo_underwater.so">
+            <model_name>flatfish</model_name> <!--Model to apply buonyancy -->
+            <link_name>flatfish_body</link_name> 
+            <length>1.5</length>  <!--Model dimensions in meters -->
+            <width>0.6</width>
+            <height>0.5</height>
+            <water_level>3</water_level>   <!-- This variable defines water depth on origin -->
+            <viscous_damping>15</viscous_damping>
+            <liquid_weight>1</liquid_weight>
+        </plugin> 
 	</world>
 </sdf>

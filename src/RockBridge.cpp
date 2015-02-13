@@ -63,9 +63,6 @@ void RockBridge::Load(int _argc , char** _argv)
 	eventHandler.push_back(
 			event::Events::ConnectWorldCreated(
 					boost::bind(&RockBridge::worldCreated,this, _1)));
-	eventHandler.push_back(
-			event::Events::ConnectAddEntity(
-					boost::bind(&RockBridge::modelAdded,this, _1)));
 }
 //======================================================================================
 // worldCreated() is called every time a world is added
@@ -80,14 +77,6 @@ void RockBridge::worldCreated(std::string const& worldName)
         return;
     }
 
-	int environment = GROUND;
-	std::string world_name("underwater");
-	if(world_name.compare((world)->GetName()) == 0)
-	{
-		environment = UNDERWATER; 
-		gzmsg << "RockBridge: underwater world detected. " << std::endl;
-	}	
-
     WorldTask* world_task = new WorldTask();
     world_task->setGazeboWorld(world);
     setupTaskActivity(world_task);
@@ -97,42 +86,17 @@ void RockBridge::worldCreated(std::string const& worldName)
     Model_V model_list = world->GetModels();
 	for(Model_V::iterator model_it = model_list.begin(); model_it != model_list.end(); ++model_it)
 	{
-		createTask(world,*model_it,environment);
+		createTask(world,*model_it);
 	}
 	model_list.clear();
-	worlds.push_back(world);
 }
-//======================================================================================
-void RockBridge::modelAdded(std::string const& modelName)
-{
-	gzmsg << "RockBridge: added entity: " << modelName << std::endl;
-	for(WorldContainer::iterator world_it = worlds.begin();
-		world_it != worlds.end(); ++world_it)
-	{
-		int environment = GROUND;
-		std::string world_name("underwater");
-		if(world_name.compare((*world_it)->GetName()) == 0)
-		{
-			environment = UNDERWATER; 
-			gzmsg << "RockBridge: underwater world detected. " << std::endl;
-		}	
 
-//        if(physics::ModelPtr model = (*world_it)->GetModel(modelName))
-//        {
-////          physics::BasePtr model_base = (*world_it)->GetByName(modelName);
-////		  physics::ModelPtr model(new physics::Model(model_base));
-
-//            gzmsg << "Model name: " << model->GetName() << std::endl;  		    
-//		    createTask(*world_it, model, environment);
-//        }
-        }
-}
 void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 {
     // Export the component interface on CORBA to Ruby access the component
     RTT::corba::TaskContextServer::Create( task );
 	
-    // Set up the component activityate_signal
+    // Set up the component activity_signal
     RTT::extras::SequentialActivity* activity =
         new RTT::extras::SequentialActivity(task->engine());
     activity->start();
@@ -141,14 +105,14 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 }
 
 //======================================================================================
-void RockBridge::createTask(physics::WorldPtr world, physics::ModelPtr model, int environment)
+void RockBridge::createTask(physics::WorldPtr world, physics::ModelPtr model)
 {
 	std::cout << " ~ " << std::endl;
 	gzmsg << "RockBridge: initializing model: "<< (model)->GetName() << std::endl;
 
         // Create and initialize one rock component for each gazebo model
     ModelTask* task = new ModelTask();
-    task->setGazeboModel(world, model, environment);
+    task->setGazeboModel(world, model);
     setupTaskActivity(task);
 }
 //======================================================================================
@@ -188,8 +152,6 @@ RockBridge::~RockBridge()
 		delete *task_it;
 	}
 	tasks.clear();
-	
-	worlds.clear();
 
     RTT::corba::TaskContextServer::ShutdownOrb();
     RTT::corba::TaskContextServer::DestroyOrb();	
