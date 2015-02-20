@@ -7,5 +7,6 @@
   <url>http://</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
+  <depend package="simulation/gazebo" />
   <depend package="simulation/orogen/rock_gazebo" />
 </package>
