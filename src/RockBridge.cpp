@@ -143,7 +143,6 @@ RockBridge::~RockBridge()
     {
         delete *activity_it;
     }
-    activities.clear();
 
     // Delete pointers to tasks
     for(Tasks::iterator task_it = tasks.begin();
@@ -151,7 +150,6 @@ RockBridge::~RockBridge()
     {
         delete *task_it;
     }
-    tasks.clear();
 
     RTT::corba::TaskContextServer::ShutdownOrb();
     RTT::corba::TaskContextServer::DestroyOrb();	
