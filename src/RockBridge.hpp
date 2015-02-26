@@ -35,13 +35,13 @@ namespace rock_gazebo
         public:
             // Pure virtual function implementation
             virtual void Load(int _argc = 0, char** _argv = NULL);
-            //			virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
+            // virtual void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
             RockBridge(); 
             ~RockBridge();
 
         private:
             void worldCreated(std::string const&);
-            //			void modelAdded(std::string const&);
+            // void modelAdded(std::string const&);
             void createTask(gazebo::physics::WorldPtr, gazebo::physics::ModelPtr); 
             void updateBegin(gazebo::common::UpdateInfo const& info);
             void updateEnd();
