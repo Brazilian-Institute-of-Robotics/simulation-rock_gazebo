@@ -1,8 +1,8 @@
 //====================================================================================== 
 #include "RockBridge.hpp"
 
-#include <gazebo/ModelTask.hpp>
-#include <gazebo/WorldTask.hpp>
+#include <rock_gazebo/ModelTask.hpp>
+#include <rock_gazebo/WorldTask.hpp>
 
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
@@ -14,10 +14,10 @@
 #include <base/transports/typelib/TransportPlugin.hpp>
 #include <base/transports/mqueue/TransportPlugin.hpp>
 
-#include <gazebo/typekit/Plugin.hpp>
-#include <gazebo/transports/corba/TransportPlugin.hpp>
-#include <gazebo/transports/typelib/TransportPlugin.hpp>
-#include <gazebo/transports/mqueue/TransportPlugin.hpp>
+#include <rock_gazebo/typekit/Plugin.hpp>
+#include <rock_gazebo/transports/corba/TransportPlugin.hpp>
+#include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
+#include <rock_gazebo/transports/mqueue/TransportPlugin.hpp>
 
 #include <rtt/base/ActivityInterface.hpp>
 #include <rtt/TaskContext.hpp>
@@ -47,10 +47,10 @@ void RockBridge::Load(int _argc , char** _argv)
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseMQueueTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseTypelibTransportPlugin);
 
-    RTT::types::TypekitRepository::Import(new orogen_typekits::gazeboTypekitPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::gazeboCorbaTransportPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::gazeboMQueueTransportPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::gazeboTypelibTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypekitPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboCorbaTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboMQueueTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypelibTransportPlugin);
 
 
     // Each simulation step the Update method is called to update the simulated sensors and actuators
@@ -68,8 +68,6 @@ void RockBridge::Load(int _argc , char** _argv)
 // worldCreated() is called every time a world is added
 void RockBridge::worldCreated(std::string const& worldName)
 {
-    gzmsg << "RockBridge: initializing world: " << worldName << std::endl;
-
     physics::WorldPtr world = physics::get_world(worldName);
     if (!world)
     {
@@ -77,16 +75,21 @@ void RockBridge::worldCreated(std::string const& worldName)
         return;
     }
 
+    gzmsg << "RockBridge: initializing world: " << worldName << std::endl;
     WorldTask* world_task = new WorldTask();
     world_task->setGazeboWorld(world);
     setupTaskActivity(world_task);
-    tasks.push_back(world_task);
 
     typedef physics::Model_V Model_V;
     Model_V model_list = world->GetModels();
     for(Model_V::iterator model_it = model_list.begin(); model_it != model_list.end(); ++model_it)
     {
-        createTask(world,*model_it);
+        std::cout << " ~ " << std::endl;
+        gzmsg << "RockBridge: initializing model: "<< (*model_it)->GetName() << std::endl;
+        // Create and initialize one rock component for each gazebo model
+        ModelTask* model_task = new ModelTask();
+        model_task->setGazeboModel(world, (*model_it) );
+        setupTaskActivity(model_task);
     }
     model_list.clear();
 }
@@ -104,17 +107,6 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
     tasks.push_back(task);
 }
 
-//======================================================================================
-void RockBridge::createTask(physics::WorldPtr world, physics::ModelPtr model)
-{
-    std::cout << " ~ " << std::endl;
-    gzmsg << "RockBridge: initializing model: "<< (model)->GetName() << std::endl;
-
-    // Create and initialize one rock component for each gazebo model
-    ModelTask* task = new ModelTask();
-    task->setGazeboModel(world, model);
-    setupTaskActivity(task);
-}
 //======================================================================================
 // Callback method triggered every update begin
 // It test conditions and implement all rock components functionalities
