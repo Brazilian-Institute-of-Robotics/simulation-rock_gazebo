@@ -1,4 +1,15 @@
-#! /bin/sh
+#! /usr/bin/ruby
+require 'rock/bundles'
+require 'optparse'
 
-gzserver --verbose -s @CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so "$@"
+options = OptionParser.new
+args = options.parse(ARGV)
+world_file = args.shift
+
+Bundles.load
+
+ENV['GAZEBO_MODEL_PATH']=(ENV['GAZEBO_MODEL_PATH']||"")+
+Bundles.find_dirs('data','gazebo','models', :all => true, :order => :specific_first).join(":")
+
+Process.exec("gzserver --verbose -s  @CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so #{world_file}")
 

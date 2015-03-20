@@ -3,7 +3,7 @@
   This package integrates the gazebo simulator and the Rock framework.
   </description>
   <author>Thomio Watanabe/thomio.watanabe@fieb.org.br</author>
-  <license></license>
+  <license>GNU GPLv2</license>
   <url>http://</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
