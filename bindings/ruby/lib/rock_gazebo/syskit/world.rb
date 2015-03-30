@@ -84,15 +84,19 @@ module RockGazebo
                 deployed_tasks[task_name] ||= name_service.get(task_name)
             end
 
-            def kill(wait = true, status = ProcessManager::Status.new(:exit_code => 0))
+            def kill(wait = true, status = WorldManager::Status.new(:exit_code => 0))
                 deployed_tasks.each_value do |task|
-                    task.stop
-                    task.cleanup
+                    if task.rtt_state == :RUNNING
+                        task.stop
+                    end
+                    if task.rtt_state == :STOPPED
+                        task.cleanup
+                    end
                 end
                 dead!(status)
             end
 
-            def dead!(status = ProcessManager::Status.new(:exit_code => 0))
+            def dead!(status = WorldManager::Status.new(:exit_code => 0))
                 @alive = false
                 if world_manager
                     world_manager.dead_deployment(name, status)

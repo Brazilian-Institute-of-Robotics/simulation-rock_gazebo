@@ -36,9 +36,61 @@ module RockGazebo
                 end
 
                 it "returns true as soon as the world task becomes available" do
-                    Orocos.initialize
+                    if !Orocos.initialized?
+                        Orocos.initialize
+                    end
                     new_ruby_task_context 'gazebo:underwater'
                     assert world.wait_running
+                end
+            end
+
+            describe "task" do
+                include Orocos::Test::RubyTasks
+
+                before do
+                    if !Orocos.initialized?
+                        Orocos.initialize
+                    end
+                    new_ruby_task_context 'gazebo:underwater'
+                end
+
+                it "resolves the task" do
+                    task = world.task 'gazebo:underwater'
+                    assert_equal '/gazebo:underwater', task.name
+                end
+                it "caches the resolved task" do
+                    task = world.task 'gazebo:underwater'
+                    assert_same task, world.task('gazebo:underwater')
+                end
+            end
+
+            describe "stop" do
+                include Orocos::Test::RubyTasks
+
+                attr_reader :task
+
+                before do
+                    if !Orocos.initialized?
+                        Orocos.initialize
+                    end
+                    new_ruby_task_context 'gazebo:underwater'
+                    @task = world.task 'gazebo:underwater'
+                end
+
+                it "stops and cleans up running tasks" do
+                    task.configure
+                    task.start
+                    world.kill
+                    assert_equal :PRE_OPERATIONAL, task.rtt_state
+                end
+                it "cleans up stopped tasks" do
+                    task.configure
+                    world.kill
+                    assert_equal :PRE_OPERATIONAL, task.rtt_state
+                end
+                it "leaves pre_operational tasks alone" do
+                    world.kill
+                    assert_equal :PRE_OPERATIONAL, task.rtt_state
                 end
             end
         end
