@@ -11,4 +11,4 @@ Bundles.load
 ENV['GAZEBO_MODEL_PATH']=(ENV['GAZEBO_MODEL_PATH']||"")+
 Bundles.find_dirs('data','gazebo','models', :all => true, :order => :specific_first).join(":")
 
-Process.exec("gazebo --verbose -s  @CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so #{world_file}")
+Process.exec("gazebo","--verbose","-s","@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so","#{world_file}")
