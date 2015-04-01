@@ -64,7 +64,7 @@ void RockBridge::Load(int _argc , char** _argv)
             event::Events::ConnectWorldCreated(
                 boost::bind(&RockBridge::worldCreated,this, _1)));
 }
-//======================================================================================
+
 // worldCreated() is called every time a world is added
 void RockBridge::worldCreated(std::string const& worldName)
 {
@@ -84,7 +84,6 @@ void RockBridge::worldCreated(std::string const& worldName)
     Model_V model_list = world->GetModels();
     for(Model_V::iterator model_it = model_list.begin(); model_it != model_list.end(); ++model_it)
     {
-        std::cout << " ~ " << std::endl;
         gzmsg << "RockBridge: initializing model: "<< (*model_it)->GetName() << std::endl;
         // Create and initialize one rock component for each gazebo model
         ModelTask* model_task = new ModelTask();
@@ -107,7 +106,6 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
     tasks.push_back(task);
 }
 
-//======================================================================================
 // Callback method triggered every update begin
 // It test conditions and implement all rock components functionalities
 void RockBridge::updateBegin(common::UpdateInfo const& info)
@@ -118,15 +116,14 @@ void RockBridge::updateBegin(common::UpdateInfo const& info)
     }
 }
 
-//======================================================================================
 void RockBridge::updateEnd()
 {
 }
-//======================================================================================
+
 RockBridge::RockBridge()
 {
 }
-//======================================================================================
+
 RockBridge::~RockBridge()
 {
     // Delete pointers to activity
@@ -146,4 +143,3 @@ RockBridge::~RockBridge()
     RTT::corba::TaskContextServer::ShutdownOrb();
     RTT::corba::TaskContextServer::DestroyOrb();	
 }
-//======================================================================================
