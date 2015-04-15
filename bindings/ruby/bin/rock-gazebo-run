@@ -1,0 +1,5 @@
+#! /usr/bin/env ruby
+require 'rock/gazebo'
+Bundles.load
+Process.exec(Hash['GAZEBO_MODEL_PATH' => Rock::Gazebo.model_path.join(":")],
+             *ARGV)

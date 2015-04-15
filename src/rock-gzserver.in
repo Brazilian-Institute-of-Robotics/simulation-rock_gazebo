@@ -1,12 +1,3 @@
-#! /usr/bin/ruby
-require 'rock/bundles'
+#! /bin/sh
 
-Bundles.load
-
-model_path =
-    Bundles.find_dirs('data','gazebo','models', :all => true, :order => :specific_first).join(":") +
-    (ENV['GAZEBO_MODEL_PATH']||"")
-
-Process.exec(
-    Hash['GAZEBO_MODEL_PATH' => model_path],
-    "gzserver",'-s',"@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so",*ARGV)
+rock-gazebo-run gazebo -s "@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so" "$@"
