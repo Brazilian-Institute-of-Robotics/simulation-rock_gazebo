@@ -27,6 +27,7 @@ require 'rock/gazebo'
 Rock::Gazebo.initialize
 
 vizkit3d = Vizkit.vizkit3d_widget
+vizkit3d.transformer = false
 conf = Transformer::Configuration.new
 conf.load_sdf(path)
 vizkit3d.apply_transformer_configuration(conf)
