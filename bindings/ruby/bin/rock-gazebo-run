@@ -1,5 +1,28 @@
 #! /usr/bin/env ruby
 require 'rock/gazebo'
 Bundles.load
-Process.exec(Hash['GAZEBO_MODEL_PATH' => Rock::Gazebo.model_path.join(":")],
-             *ARGV)
+
+model_path = Rock::Gazebo.model_path
+
+argv = ARGV.map do |path|
+    if File.file?(path)
+        path
+    elsif path =~ /^model:\/\/(\w+)(.*)/
+        model_name, filename = $1, $2
+        require 'sdf'
+        SDF::XML.model_path = model_path
+        model_dir = File.dirname(SDF::XML.model_path_from_name(model_name))
+        File.join(model_dir, filename)
+    elsif File.extname(path) == '.world'
+        if resolved_path = Bundles.find_file('data', 'gazebo', 'worlds', path, all: false, order: :specific_first)
+            resolved_path
+        else
+            path
+        end
+    else
+        path
+    end
+end
+
+Process.exec(Hash['GAZEBO_MODEL_PATH' => model_path.join(":")],
+             *argv)
