@@ -1,14 +1,3 @@
-#! /usr/bin/ruby
-require 'rock/bundles'
-require 'optparse'
+#! /bin/sh
 
-options = OptionParser.new
-args = options.parse(ARGV)
-world_file = args.shift
-
-Bundles.load
-
-ENV['GAZEBO_MODEL_PATH']=Bundles.find_dirs('data','gazebo','models', :all => true,
-    :order => :specific_first).join(":")+(ENV['GAZEBO_MODEL_PATH']||"")
-
-Process.exec("gazebo","--verbose","-s","@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so","#{world_file}")
+rock-gazebo-run gazebo -s "@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so" "$@"

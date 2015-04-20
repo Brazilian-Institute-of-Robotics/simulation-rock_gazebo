@@ -1,0 +1,78 @@
+#! /usr/bin/env ruby
+require 'vizkit'
+require 'transformer'
+require 'transformer/sdf'
+
+start = true
+parser = OptionParser.new do |opt|
+    opt.banner = "rock-gazebo-viz [OPTIONS] worldfile"
+
+    opt.on '--host HOSTNAME', String, 'the host we should connect to to find the rock_gazebo tasks' do |host|
+        Orocos::CORBA.name_service.ip = host
+    end
+
+    opt.on '--[no-]start', 'do not start the rock_gazebo::ModelTask we need (the default is to start them automatically)' do |host|
+        start = false
+    end
+end
+
+path = parser.parse(ARGV)
+if path.size != 1
+    STDERR.puts parser
+    exit 1
+end
+path = path.first
+
+require 'rock/gazebo'
+Rock::Gazebo.initialize
+
+vizkit3d = Vizkit.vizkit3d_widget
+vizkit3d.transformer = false
+conf = Transformer::Configuration.new
+conf.load_sdf(path)
+vizkit3d.apply_transformer_configuration(conf)
+
+sdf = SDF::Root.load(path)
+sdf.each_model(recursive: true) do |model|
+    model_viz = Vizkit.default_loader.RobotVisualization
+    model_viz.enabled = false
+
+    model_only = model.make_root
+    model_viz.loadFromString(model_only.xml.to_s, 'sdf', File.dirname(path))
+    model_viz.frame = model.name
+
+    task_name = "gazebo:#{model.full_name.gsub('::', ':')}"
+    task_proxy = Orocos::Async.proxy task_name
+    if start
+        task_proxy.on_reachable do
+            begin
+                if task_proxy.rtt_state == :PRE_OPERATIONAL
+                    task_proxy.configure
+                end
+
+                if task_proxy.rtt_state == :STOPPED
+                    task_proxy.start
+                end
+
+                state = task_proxy.rtt_state
+                if state != :RUNNING
+                    STDERR.puts "could not start #{task_name} (currently in state #{state})"
+                end
+            rescue Exception => e
+                STDERR.puts "failed to start #{task_name}: #{e}"
+            end
+        end
+    end
+    trsf = conf.dynamic_transform "#{task_name}.pose_samples", model.name => (model.parent.full_name || 'osg_world')
+    vizkit3d.listen_to_transformation_producer(trsf)
+    joints_out = task_proxy.port "joints_samples"
+
+    joints_out.on_data do |sample|
+        model_viz.updateData(sample)
+    end
+    joints_out.once_on_data do |sample|
+        model_viz.enabled = true
+    end
+end
+
+Vizkit.exec
