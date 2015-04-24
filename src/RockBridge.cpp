@@ -94,13 +94,14 @@ void RockBridge::worldCreated(std::string const& worldName)
             sdf::ElementPtr pluginElement = modelSDF->GetElement("plugin");
             std::string pluginFilename = pluginElement->Get<std::string>("filename");
             gzmsg <<"RockBridge: found plugin "<< pluginFilename << std::endl;
-            if(pluginFilename == "libgazebo_thruster.so")
+            if (pluginFilename == "libgazebo_thruster.so")
             {
-                ThrusterTask* model_task = new ThrusterTask();
-                model_task->setGazeboModel(world, (*model_it) );
-                setupTaskActivity(model_task);
+                ThrusterTask* thruster_task = new ThrusterTask();
+                thruster_task->setGazeboModel(world, (*model_it), pluginElement);
+                setupTaskActivity(thruster_task);
             }
         }
+
         ModelTask* model_task = new ModelTask();
         model_task->setGazeboModel(world, (*model_it) );
         setupTaskActivity(model_task);
