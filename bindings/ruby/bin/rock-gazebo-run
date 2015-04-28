@@ -4,25 +4,40 @@ Bundles.load
 
 model_path = Rock::Gazebo.model_path
 
-argv = ARGV.map do |path|
-    if File.file?(path)
-        path
-    elsif path =~ /^model:\/\/(\w+)(.*)/
+filtered_argv = Array.new
+original_argv = ARGV.dup
+while !original_argv.empty?
+    arg = original_argv.shift
+
+    if arg == '--model-dir'
+        dir = original_argv.shift
+        if !dir
+            STDERR.puts "no argument given to --model-dir"
+            exit 1
+        elsif !File.dirname(dir)
+            STDERR.puts "#{dir} is not a directory"
+            exit 1
+        end
+
+        model_path.unshift dir
+    elsif File.file?(arg)
+        filtered_argv << arg
+    elsif arg =~ /^model:\/\/(\w+)(.*)/
         model_name, filename = $1, $2
         require 'sdf'
         SDF::XML.model_path = model_path
         model_dir = File.dirname(SDF::XML.model_path_from_name(model_name))
-        File.join(model_dir, filename)
-    elsif File.extname(path) == '.world'
-        if resolved_path = Bundles.find_file('data', 'gazebo', 'worlds', path, all: false, order: :specific_first)
-            resolved_path
+        filtered_argv << File.join(model_dir, filename)
+    elsif File.extname(arg) == '.world'
+        if resolved_path = Bundles.find_file('data', 'gazebo', 'worlds', arg, all: false, order: :specific_first)
+            filtered_argv << resolved_path
         else
-            path
+            filtered_argv << arg
         end
     else
-        path
+        filtered_argv << arg
     end
 end
 
 Process.exec(Hash['GAZEBO_MODEL_PATH' => model_path.join(":")],
-             *argv)
+             *filtered_argv)
