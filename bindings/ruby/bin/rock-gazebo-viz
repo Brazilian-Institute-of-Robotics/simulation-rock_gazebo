@@ -16,18 +16,20 @@ parser = OptionParser.new do |opt|
     end
 end
 
-path = parser.parse(ARGV)
+require 'rock/gazebo'
+Rock::Gazebo.initialize
+_, argv = Rock::Gazebo.resolve_worldfiles_and_models_arguments(ARGV)
+
+path = parser.parse(argv)
 if path.size != 1
     STDERR.puts parser
     exit 1
 end
 path = path.first
 
-require 'rock/gazebo'
-Rock::Gazebo.initialize
 
 vizkit3d = Vizkit.vizkit3d_widget
-vizkit3d.transformer = false
+vizkit3d.setTransformer(false)
 conf = Transformer::Configuration.new
 conf.load_sdf(path)
 vizkit3d.apply_transformer_configuration(conf)
