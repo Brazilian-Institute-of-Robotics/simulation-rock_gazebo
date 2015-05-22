@@ -4,9 +4,10 @@ require 'sdf'
 module Rock
     module Gazebo
         def self.default_model_path
-            Bundles.find_dirs('data','gazebo','models', :all => true, :order => :specific_first) +
+            Bundles.find_dirs('models','sdf', :all => true, :order => :specific_first) +
                 (ENV['GAZEBO_MODEL_PATH']||"").split(':') +
-                [File.join(Dir.home, '.gazebo', 'models')]
+                [File.join(Dir.home, '.gazebo', 'models')] +
+                [ENV['AUTOPROJ_CURRENT_ROOT'] + '/robots']
         end
 
         def self.model_path
@@ -45,7 +46,7 @@ module Rock
                     model_dir = File.dirname(SDF::XML.model_path_from_name(model_name, model_path: model_path))
                     filtered_argv << File.join(model_dir, filename)
                 elsif File.extname(arg) == '.world'
-                    if resolved_path = Bundles.find_file('data', 'gazebo', 'worlds', arg, all: false, order: :specific_first)
+                    if resolved_path = Bundles.find_file('scenes', 'worlds', arg, all: false, order: :specific_first)
                         filtered_argv << resolved_path
                     else
                         filtered_argv << arg
