@@ -22,6 +22,13 @@ module RockGazebo
         world.each_model do |model|
             deployment.task("gazebo:#{world.name}:#{model.name}", "rock_gazebo::ModelTask").
                 periodic(period)
+
+            model.each_plugin do |plugin|
+                if plugin.filename =~ /gazebo_thruster/
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{plugin.name}", "rock_gazebo::ThrusterTask").
+                        periodic(period)
+                end
+            end
         end
 
         deployment
