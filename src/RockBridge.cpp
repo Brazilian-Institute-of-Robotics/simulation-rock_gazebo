@@ -4,6 +4,7 @@
 #include <rock_gazebo/ModelTask.hpp>
 #include <rock_gazebo/WorldTask.hpp>
 #include <rock_gazebo/ThrusterTask.hpp>
+#include <rock_gazebo/USBLTask.hpp>
 
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
@@ -103,6 +104,13 @@ void RockBridge::worldCreated(std::string const& worldName)
                 }
                 pluginElement = pluginElement->GetNextElement("plugin");
             }
+        }
+
+        if(modelSDF->GetName() == "USBL")
+        {
+            USBLTask* usbl_task = new USBLTask();
+            usbl_task->setGazeboModel(world, (*model_it));
+            setupTaskActivity(usbl_task);
         }
 
         ModelTask* model_task = new ModelTask();
