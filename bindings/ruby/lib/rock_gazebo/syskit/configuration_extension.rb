@@ -2,16 +2,16 @@ module RockGazebo
     module Syskit
         module ConfigurationExtension
             def use_gazebo_world(*path)
-                Roby.app.find_dirs('data', 'models', order: :specific_first, all: true).each do |path|
-                    if !SDF::XML.model_path.include?(path)
-                        SDF::XML.model_path.unshift path
+                app.find_dirs('models', 'sdf', order: :specific_first, all: true).each do |model_dir|
+                    if !SDF::XML.model_path.include?(model_dir)
+                        SDF::XML.model_path.unshift model_dir
                     end
                 end
 
                 full_path = File.expand_path(File.join(*path))
                 if !File.exists?(full_path)
                     full_path = Roby.app.find_file(*path, order: :specific_first) ||
-                        Roby.app.find_file('data', 'gazebo', 'worlds', *path, order: :specific_first)
+                        Roby.app.find_file('scenes', *path, order: :specific_first)
 
                     if !full_path
                         raise ArgumentError, "cannot find #{File.join(*path)}"
