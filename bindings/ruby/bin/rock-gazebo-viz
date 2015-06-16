@@ -4,6 +4,7 @@ require 'transformer'
 require 'transformer/sdf'
 
 start = true
+env_plugin_name = nil
 parser = OptionParser.new do |opt|
     opt.banner = "rock-gazebo-viz [OPTIONS] worldfile"
 
@@ -13,6 +14,10 @@ parser = OptionParser.new do |opt|
 
     opt.on '--[no-]start', 'do not start the rock_gazebo::ModelTask we need (the default is to start them automatically)' do |host|
         start = false
+    end
+
+    opt.on '--env=NAME', String, 'an environment plugin to load in the scene (e.g. Ocean)' do |name|
+        env_plugin_name = name
     end
 end
 
@@ -27,9 +32,14 @@ if path.size != 1
 end
 path = path.first
 
-
 vizkit3d = Vizkit.vizkit3d_widget
 vizkit3d.setTransformer(false)
+
+if env_plugin_name
+    env_plugin = Vizkit.default_loader.send(env_plugin_name)
+    vizkit3d.setEnvironmentPlugin(env_plugin)
+end
+
 conf = Transformer::Configuration.new
 conf.load_sdf(path)
 vizkit3d.apply_transformer_configuration(conf)
