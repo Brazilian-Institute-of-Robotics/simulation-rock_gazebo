@@ -40,6 +40,7 @@ namespace rock_gazebo
             void setupTaskActivity(RTT::TaskContext* task);
 
             void instantiatePluginComponents( sdf::ElementPtr modelElement, ModelPtr model );
+            void instantiateSensorComponents( sdf::ElementPtr modelElement, ModelPtr model );
 
             std::vector<gazebo::event::ConnectionPtr> eventHandler;
 

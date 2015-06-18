@@ -4,6 +4,7 @@
 #include <rock_gazebo/ModelTask.hpp>
 #include <rock_gazebo/WorldTask.hpp>
 #include <rock_gazebo/ThrusterTask.hpp>
+#include <rock_gazebo/LaserScanTask.hpp>
 
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
@@ -115,6 +116,8 @@ void RockBridge::worldCreated(string const& worldName)
         // Create and initialize a component for each model plugin
         instantiatePluginComponents( modelElement, (*model_it) );
 
+        // Create and initialize a component for each sensor
+        instantiateSensorComponents( modelElement, (*model_it) );
     }
     model_list.clear();
 }
@@ -160,6 +163,33 @@ void RockBridge::instantiatePluginComponents(sdf::ElementPtr modelElement, Model
             }
 
             pluginElement = pluginElement->GetNextElement("plugin");
+        }
+    }
+}
+
+void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, ModelPtr model)
+{
+    if( modelElement->HasElement("link") ){
+        sdf::ElementPtr linkElement = modelElement->GetElement("link");
+        while( linkElement ){
+            if( linkElement->HasElement("sensor") ){
+                sdf::ElementPtr sensorElement = linkElement->GetElement("sensor");
+                while( sensorElement ){
+                    string sensorName = sensorElement->Get<string>("name");
+                    string sensorType = sensorElement->Get<string>("type");
+                    // To support more sensors, test for different sensors types
+                    if( sensorType == "ray" )
+                    {
+                        gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
+                        LaserScanTask* laser_line_task = new LaserScanTask();
+                        laser_line_task->setGazeboLaserScan( model, sensorName );
+                        setupTaskActivity( laser_line_task );
+                    }
+
+                    sensorElement = sensorElement->GetNextElement("sensor");
+                }
+            }
+            linkElement = linkElement->GetNextElement("link");
         }
     }
 }
