@@ -158,7 +158,7 @@ void RockBridge::instantiatePluginComponents(sdf::ElementPtr modelElement, Model
             if(pluginFilename == "libgazebo_thruster.so")
             {
                 ThrusterTask* thruster_task = new ThrusterTask();
-                thruster_task->setGazeboThruster( model );
+                thruster_task->setGazeboModel( model );
                 setupTaskActivity(thruster_task);
             }
 
@@ -182,7 +182,7 @@ void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, Model
                     {
                         gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
                         LaserScanTask* laser_line_task = new LaserScanTask();
-                        laser_line_task->setGazeboLaserScan( model, sensorName );
+                        laser_line_task->setGazeboModel( model, sensorName );
                         setupTaskActivity( laser_line_task );
                     }
 
