@@ -44,6 +44,11 @@ conf = Transformer::Configuration.new
 conf.load_sdf(path)
 vizkit3d.apply_transformer_configuration(conf)
 
+#
+# It is necessary calling Bundles.load to apply the configuration
+#
+Bundles.load
+
 sdf = SDF::Root.load(path)
 sdf.each_model(recursive: true) do |model|
     model_viz = Vizkit.default_loader.RobotVisualization
@@ -54,7 +59,19 @@ sdf.each_model(recursive: true) do |model|
     model_viz.frame = model.name
 
     task_name = "gazebo:#{model.full_name.gsub('::', ':')}"
-    task_proxy = Orocos::Async.proxy task_name
+    task = Bundles.get(task_name)
+    task_proxy = task.to_async
+
+    #
+    # set the property here
+    # it's necessary applying configuration to export the links
+    #
+    begin
+        Orocos.conf.apply(task, [model.name])
+    rescue
+        warn "unable to apply config to #{model.name}"
+    end
+
     if start
         task_proxy.on_reachable do
             begin
