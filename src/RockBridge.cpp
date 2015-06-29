@@ -182,7 +182,8 @@ void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, Model
                     {
                         gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
                         LaserScanTask* laser_line_task = new LaserScanTask();
-                        laser_line_task->setGazeboModel( model, sensorName );
+                        string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/scan";
+                        laser_line_task->setGazeboModel( model, sensorName, topicName );
                         setupTaskActivity( laser_line_task );
                     }
 
