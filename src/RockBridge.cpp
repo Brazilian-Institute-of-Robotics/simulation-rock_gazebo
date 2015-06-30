@@ -148,50 +148,43 @@ void RockBridge::updateBegin(common::UpdateInfo const& info)
 
 void RockBridge::instantiatePluginComponents(sdf::ElementPtr modelElement, ModelPtr model)
 {
-    if(modelElement->HasElement("plugin"))
-    {
-        sdf::ElementPtr pluginElement = modelElement->GetElement("plugin");
-        while(pluginElement) {
-            string pluginFilename = pluginElement->Get<string>("filename");
-            gzmsg << "RockBridge: found plugin "<< pluginFilename << endl;
-            // Add more model plugins testing them here
-            if(pluginFilename == "libgazebo_thruster.so")
-            {
-                ThrusterTask* thruster_task = new ThrusterTask();
-                thruster_task->setGazeboModel( model );
-                setupTaskActivity(thruster_task);
-            }
-
-            pluginElement = pluginElement->GetNextElement("plugin");
+    sdf::ElementPtr pluginElement = modelElement->GetElement("plugin");
+    while(pluginElement) {
+        string pluginFilename = pluginElement->Get<string>("filename");
+        gzmsg << "RockBridge: found plugin "<< pluginFilename << endl;
+        // Add more model plugins testing them here
+        if(pluginFilename == "libgazebo_thruster.so")
+        {
+            ThrusterTask* thruster_task = new ThrusterTask();
+            thruster_task->setGazeboModel( model );
+            setupTaskActivity(thruster_task);
         }
+
+        pluginElement = pluginElement->GetNextElement("plugin");
     }
 }
 
 void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, ModelPtr model)
 {
-    if( modelElement->HasElement("link") ){
-        sdf::ElementPtr linkElement = modelElement->GetElement("link");
-        while( linkElement ){
-            if( linkElement->HasElement("sensor") ){
-                sdf::ElementPtr sensorElement = linkElement->GetElement("sensor");
-                while( sensorElement ){
-                    string sensorName = sensorElement->Get<string>("name");
-                    string sensorType = sensorElement->Get<string>("type");
-                    // To support more sensors, test for different sensors types
-                    if( sensorType == "ray" )
-                    {
-                        gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
-                        LaserScanTask* laser_line_task = new LaserScanTask();
-                        string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/scan";
-                        laser_line_task->setGazeboModel( model, sensorName, topicName );
-                        setupTaskActivity( laser_line_task );
-                    }
-
-                    sensorElement = sensorElement->GetNextElement("sensor");
-                }
+    sdf::ElementPtr linkElement = modelElement->GetElement("link");
+    while( linkElement ){
+        sdf::ElementPtr sensorElement = linkElement->GetElement("sensor");
+        while( sensorElement ){
+            string sensorName = sensorElement->Get<string>("name");
+            string sensorType = sensorElement->Get<string>("type");
+            // To support more sensors, test for different sensors types
+            if( sensorType == "ray" )
+            {
+                gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
+                LaserScanTask* laser_line_task = new LaserScanTask();
+                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/scan";
+                laser_line_task->setGazeboModel( model, sensorName, topicName );
+                setupTaskActivity( laser_line_task );
             }
-            linkElement = linkElement->GetNextElement("link");
+
+            sensorElement = sensorElement->GetNextElement("sensor");
         }
+        linkElement = linkElement->GetNextElement("link");
     }
 }
 
