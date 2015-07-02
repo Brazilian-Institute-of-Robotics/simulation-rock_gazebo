@@ -31,12 +31,16 @@ namespace rock_gazebo
             RockBridge(); 
             ~RockBridge();
 
+            typedef gazebo::physics::ModelPtr ModelPtr;
+
         private:
             void worldCreated(std::string const&);
             // void modelAdded(std::string const&);
             void updateBegin(gazebo::common::UpdateInfo const& info);
-            void updateEnd();
             void setupTaskActivity(RTT::TaskContext* task);
+
+            void instantiatePluginComponents( sdf::ElementPtr modelElement, ModelPtr model );
+            void instantiateSensorComponents( sdf::ElementPtr modelElement, ModelPtr model );
 
             std::vector<gazebo::event::ConnectionPtr> eventHandler;
 
