@@ -39,6 +39,14 @@ module Rock
                     model_path.unshift dir
                 elsif File.file?(arg)
                     filtered_argv << arg
+                elsif File.directory?(arg)
+                    candidates = Dir.glob(File.join(arg, '*.world')) +
+                        Dir.glob(File.join(arg, '*.sdf'))
+                    if candidates.size == 1
+                        filtered_argv << candidates.first
+                    else
+                        filtered_argv << arg
+                    end
                 elsif arg =~ /^model:\/\/(\w+)(.*)/
                     model_name, filename = $1, $2
                     require 'sdf'
