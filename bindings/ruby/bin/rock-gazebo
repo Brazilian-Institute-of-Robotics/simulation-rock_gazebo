@@ -1,0 +1,5 @@
+#! /usr/bin/env ruby
+require 'rock/gazebo'
+Bundles.setup_search_paths
+Rock::Gazebo.exec('gazebo', *ARGV)
+

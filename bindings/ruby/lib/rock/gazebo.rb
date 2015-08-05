@@ -1,4 +1,5 @@
 require 'rock/bundles'
+require 'rock_gazebo/path_to_plugin'
 require 'sdf'
 
 module Rock
@@ -68,8 +69,26 @@ module Rock
 
         def self.initialize
             Bundles.load
-
             self.model_path = self.default_model_path
+        end
+
+        def self.compute_spawn_arguments(cmd, *cmdline)
+            env = Hash.new
+            if cmdline.first.kind_of?(Hash)
+                env = cmdline.shift
+            end
+
+            model_path, args = resolve_worldfiles_and_models_arguments(cmdline)
+            env['GAZEBO_MODEL_PATH'] ||= model_path.join(":")
+            Array[env, cmd, '-s', RockGazebo::PATH_TO_PLUGIN, *args]
+        end
+
+        def self.spawn(cmd, *cmdline, **options)
+            Process.spawn(*compute_spawn_arguments(cmd, *cmdline), **options)
+        end
+
+        def self.exec(cmd, *cmdline, **options)
+            Process.exec(*compute_spawn_arguments(cmd, *cmdline), **options)
         end
     end
 end

@@ -1,3 +1,0 @@
-#! /bin/sh
-
-rock-gazebo-run gzserver -s "@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so" "$@"
