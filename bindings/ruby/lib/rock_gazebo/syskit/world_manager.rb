@@ -60,7 +60,7 @@ module RockGazebo
                 loader.register_deployment_model(model)
             end
 
-            def start(name, deployment_name = name, name_mappings = Hash.new, options = Hash.new)
+            def start(name, deployment_name = name, name_mappings = Hash.new, prefix: nil, **options)
                 model = if deployment_name.respond_to?(:to_str)
                             loader.deployment_model_from_name(deployment_name)
                         else deployment_name
@@ -69,8 +69,7 @@ module RockGazebo
                     raise ArgumentError, "#{name} is already started in #{self}"
                 end
 
-                prefix_mappings, options =
-                    Orocos::ProcessBase.resolve_prefix_option(options, model)
+                prefix_mappings = Orocos::ProcessBase.resolve_prefix(model, prefix)
                 name_mappings = prefix_mappings.merge(name_mappings)
                 name_mappings.each do |from, to|
                     if from != to

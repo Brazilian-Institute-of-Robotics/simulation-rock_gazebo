@@ -20,7 +20,7 @@ module RockGazebo
 
                 # Add the process manager if needed
                 if !has_process_server?('gazebo')
-                    register_process_server('gazebo', WorldManager.new(app.default_loader), 'logs')
+                    register_process_server('gazebo', WorldManager.new(app.default_loader), app.log_dir)
                 end
 
                 world_manager = process_server_for('gazebo')
