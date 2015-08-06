@@ -1,3 +1,0 @@
-#! /bin/sh
-
-rock-gazebo-run gazebo -s "@CMAKE_INSTALL_PREFIX@/lib/librock_gazebo.so" "$@"

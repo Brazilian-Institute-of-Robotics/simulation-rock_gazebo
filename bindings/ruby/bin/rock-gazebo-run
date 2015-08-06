@@ -1,6 +1,4 @@
 #! /usr/bin/env ruby
 require 'rock/gazebo'
-Rock::Gazebo.initialize
-model_path, argv = Rock::Gazebo.resolve_worldfiles_and_models_arguments(ARGV)
-Process.exec(Hash['GAZEBO_MODEL_PATH' => model_path.join(":")],
-             *argv)
+Rock::Gazebo.exec(*argv)
+
