@@ -1,3 +1,7 @@
+require 'vizkit'
+require 'rock/gazebo'
+require 'transformer/sdf'
+
 module RockGazebo
     # Library-side implementation of rock-gazebo-viz
     def self.viz(scene, env: nil, start: true, vizkit3d: Vizkit.vizkit3d_widget)
