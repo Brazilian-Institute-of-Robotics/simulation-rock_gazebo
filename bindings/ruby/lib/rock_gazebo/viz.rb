@@ -55,7 +55,6 @@ module RockGazebo
 
             models = Hash.new
             sdf = SDF::Root.load(scene_path)
-            puts sdf.xml
             sdf.each_model(recursive: true) do |model|
                 models[model] = setup_model(conf, model, vizkit3d: vizkit3d, dir: File.dirname(scene_path))
             end
@@ -73,7 +72,6 @@ module RockGazebo
             model_only = model.make_root
             model_viz.loadFromString(model_only.xml.to_s, 'sdf', dir)
             model_viz.frame = model.name
-            puts "putting model in frame #{model.name}"
 
             task_name = "gazebo:#{model.full_name.gsub('::', ':')}"
             task_proxy = Orocos::Async.proxy task_name
