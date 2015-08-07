@@ -1,6 +1,8 @@
 module RockGazebo
     # Library-side implementation of rock-gazebo-viz
     def self.viz(scene, env: nil, start: true, vizkit3d: Vizkit.vizkit3d_widget)
+        _, scene = Rock::Gazebo.resolve_worldfiles_and_models_arguments([scene])
+        scene = scene.first
         models = Viz.setup_scene(scene, vizkit3d: vizkit3d)
         if env
             if env.respond_to?(:to_str) # this is a plugin name
