@@ -1,6 +1,12 @@
+require 'vizkit'
+require 'rock/gazebo'
+require 'transformer/sdf'
+
 module RockGazebo
     # Library-side implementation of rock-gazebo-viz
     def self.viz(scene, env: nil, start: true, vizkit3d: Vizkit.vizkit3d_widget)
+        _, scene = Rock::Gazebo.resolve_worldfiles_and_models_arguments([scene])
+        scene = scene.first
         models = Viz.setup_scene(scene, vizkit3d: vizkit3d)
         if env
             if env.respond_to?(:to_str) # this is a plugin name
@@ -49,7 +55,6 @@ module RockGazebo
 
             models = Hash.new
             sdf = SDF::Root.load(scene_path)
-            puts sdf.xml
             sdf.each_model(recursive: true) do |model|
                 models[model] = setup_model(conf, model, vizkit3d: vizkit3d, dir: File.dirname(scene_path))
             end
@@ -67,7 +72,6 @@ module RockGazebo
             model_only = model.make_root
             model_viz.loadFromString(model_only.xml.to_s, 'sdf', dir)
             model_viz.frame = model.name
-            puts "putting model in frame #{model.name}"
 
             task_name = "gazebo:#{model.full_name.gsub('::', ':')}"
             task_proxy = Orocos::Async.proxy task_name
