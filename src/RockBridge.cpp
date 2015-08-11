@@ -27,6 +27,8 @@
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
 
+#include <logger/Logger.hpp>
+
 using namespace std;
 using namespace gazebo;
 using namespace rock_gazebo;
@@ -89,6 +91,8 @@ void RockBridge::Load(int _argc , char** _argv)
 // worldCreated() is called every time a world is added
 void RockBridge::worldCreated(string const& worldName)
 {
+    logger::Logger* logger_task = new logger::Logger();
+
     physics::WorldPtr world = physics::get_world(worldName);
     if (!world)
     {
