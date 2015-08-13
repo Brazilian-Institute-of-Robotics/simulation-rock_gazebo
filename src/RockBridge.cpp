@@ -26,6 +26,7 @@
 #include <logger/transports/typelib/TransportPlugin.hpp>
 #include <logger/transports/mqueue/TransportPlugin.hpp>
 
+#include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/base/ActivityInterface.hpp>
 #include <rtt/extras/SequentialActivity.hpp>
@@ -100,9 +101,14 @@ void RockBridge::Load(int _argc , char** _argv)
 // worldCreated() is called every time a world is added
 void RockBridge::worldCreated(string const& worldName)
 {
-    // Create and export the component
+    // Create the logger component and start the activity
     logger::Logger* logger_task = new logger::Logger();
     RTT::corba::TaskContextServer::Create( logger_task );
+    // RTT::Activity runs the task in separate thread
+    RTT::Activity* logger_activity = new RTT::Activity( logger_task->engine() );
+    logger_activity->start();
+    activities.push_back( logger_activity );
+    tasks.push_back( logger_task );
 
     physics::WorldPtr world = physics::get_world(worldName);
     if (!world)
@@ -142,7 +148,7 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
     // Export the component interface on CORBA to Ruby access the component
     RTT::corba::TaskContextServer::Create( task );
 
-    // Set up the component activity_signal
+    // Create and start sequential task activities
     RTT::extras::SequentialActivity* activity =
         new RTT::extras::SequentialActivity(task->engine());
     activity->start();
