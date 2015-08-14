@@ -5,6 +5,7 @@ rock_library(rock_gazebo
                 orocos-rtt-gnulinux
                 orocos-rtt-corba-gnulinux
                 rock_gazebo-tasks-gnulinux
+                logger-tasks-gnulinux
                 std-typekit-gnulinux
                 std-transport-corba-gnulinux 
                 std-transport-mqueue-gnulinux 

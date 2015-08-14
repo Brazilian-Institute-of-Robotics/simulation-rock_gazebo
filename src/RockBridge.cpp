@@ -1,11 +1,6 @@
 //====================================================================================== 
 #include "RockBridge.hpp"
 
-#include <rock_gazebo/ModelTask.hpp>
-#include <rock_gazebo/WorldTask.hpp>
-#include <rock_gazebo/ThrusterTask.hpp>
-#include <rock_gazebo/LaserScanTask.hpp>
-
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
 #include <std/transports/typelib/TransportPlugin.hpp>
@@ -16,16 +11,28 @@
 #include <base/transports/typelib/TransportPlugin.hpp>
 #include <base/transports/mqueue/TransportPlugin.hpp>
 
+#include <rock_gazebo/ModelTask.hpp>
+#include <rock_gazebo/WorldTask.hpp>
+#include <rock_gazebo/ThrusterTask.hpp>
+#include <rock_gazebo/LaserScanTask.hpp>
 #include <rock_gazebo/typekit/Plugin.hpp>
 #include <rock_gazebo/transports/corba/TransportPlugin.hpp>
 #include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
 #include <rock_gazebo/transports/mqueue/TransportPlugin.hpp>
 
-#include <rtt/base/ActivityInterface.hpp>
+#include <logger/Logger.hpp>
+#include <logger/typekit/Plugin.hpp>
+#include <logger/transports/corba/TransportPlugin.hpp>
+#include <logger/transports/typelib/TransportPlugin.hpp>
+#include <logger/transports/mqueue/TransportPlugin.hpp>
+
+#include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/base/ActivityInterface.hpp>
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+
 
 using namespace std;
 using namespace gazebo;
@@ -77,6 +84,11 @@ void RockBridge::Load(int _argc , char** _argv)
     RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboMQueueTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypelibTransportPlugin);
 
+    RTT::types::TypekitRepository::Import(new orogen_typekits::loggerTypekitPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::loggerCorbaTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::loggerMQueueTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::loggerTypelibTransportPlugin);
+
     // Each simulation step the Update method is called to update the simulated sensors and actuators
     eventHandler.push_back(
             event::Events::ConnectWorldUpdateBegin(
@@ -89,6 +101,16 @@ void RockBridge::Load(int _argc , char** _argv)
 // worldCreated() is called every time a world is added
 void RockBridge::worldCreated(string const& worldName)
 {
+    // Create the logger component and start the activity
+    logger::Logger* logger_task = new logger::Logger();
+    logger_task->provides()->setName("gazebo:" + worldName +"_Logger");
+    RTT::corba::TaskContextServer::Create( logger_task );
+    // RTT::Activity runs the task in separate thread
+    RTT::Activity* logger_activity = new RTT::Activity( logger_task->engine() );
+    logger_activity->start();
+    activities.push_back( logger_activity );
+    tasks.push_back( logger_task );
+
     physics::WorldPtr world = physics::get_world(worldName);
     if (!world)
     {
@@ -127,7 +149,7 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
     // Export the component interface on CORBA to Ruby access the component
     RTT::corba::TaskContextServer::Create( task );
 
-    // Set up the component activity_signal
+    // Create and start sequential task activities
     RTT::extras::SequentialActivity* activity =
         new RTT::extras::SequentialActivity(task->engine());
     activity->start();
