@@ -1,15 +1,6 @@
 //====================================================================================== 
 #include "RockBridge.hpp"
 
-#include <rock_gazebo/ModelTask.hpp>
-#include <rock_gazebo/WorldTask.hpp>
-#include <rock_gazebo/ThrusterTask.hpp>
-#include <rock_gazebo/LaserScanTask.hpp>
-#include <rock_gazebo/typekit/Plugin.hpp>
-#include <rock_gazebo/transports/corba/TransportPlugin.hpp>
-#include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
-#include <rock_gazebo/transports/mqueue/TransportPlugin.hpp>
-
 #include <std/typekit/Plugin.hpp>
 #include <std/transports/corba/TransportPlugin.hpp>
 #include <std/transports/typelib/TransportPlugin.hpp>
@@ -19,6 +10,15 @@
 #include <base/transports/corba/TransportPlugin.hpp>
 #include <base/transports/typelib/TransportPlugin.hpp>
 #include <base/transports/mqueue/TransportPlugin.hpp>
+
+#include <rock_gazebo/ModelTask.hpp>
+#include <rock_gazebo/WorldTask.hpp>
+#include <rock_gazebo/ThrusterTask.hpp>
+#include <rock_gazebo/LaserScanTask.hpp>
+#include <rock_gazebo/typekit/Plugin.hpp>
+#include <rock_gazebo/transports/corba/TransportPlugin.hpp>
+#include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
+#include <rock_gazebo/transports/mqueue/TransportPlugin.hpp>
 
 #include <logger/Logger.hpp>
 #include <logger/typekit/Plugin.hpp>
@@ -69,11 +69,6 @@ void RockBridge::Load(int _argc , char** _argv)
     RTT::corba::TaskContextServer::ThreadOrb(ORO_SCHED_OTHER, RTT::os::LowestPriority, 0);
 
     // Import typekits to allow RTT convert the types used by the components
-    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypekitPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboCorbaTransportPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboMQueueTransportPlugin);
-    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypelibTransportPlugin);
-
     RTT::types::TypekitRepository::Import(new orogen_typekits::stdTypekitPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::stdCorbaTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::stdMQueueTransportPlugin);
@@ -83,6 +78,11 @@ void RockBridge::Load(int _argc , char** _argv)
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseCorbaTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseMQueueTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseTypelibTransportPlugin);
+
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypekitPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboCorbaTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboMQueueTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypelibTransportPlugin);
 
     RTT::types::TypekitRepository::Import(new orogen_typekits::loggerTypekitPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::loggerCorbaTransportPlugin);
@@ -103,6 +103,7 @@ void RockBridge::worldCreated(string const& worldName)
 {
     // Create the logger component and start the activity
     logger::Logger* logger_task = new logger::Logger();
+    logger_task->provides()->setName("gazebo:" + worldName +"_Logger");
     RTT::corba::TaskContextServer::Create( logger_task );
     // RTT::Activity runs the task in separate thread
     RTT::Activity* logger_activity = new RTT::Activity( logger_task->engine() );
