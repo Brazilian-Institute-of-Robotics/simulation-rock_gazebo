@@ -53,7 +53,7 @@ module RockGazebo
                 end
 
                 model = RockGazebo.orogen_model_from_sdf_world("gazebo_world_#{world.name}", world, loader: loader)
-                register_deployment_model(model)
+                return register_deployment_model(model), world
             end
 
             def register_deployment_model(model)
