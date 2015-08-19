@@ -60,6 +60,10 @@ module Rock
                     else
                         filtered_argv << arg
                     end
+                elsif resolved_path = Bundles.find_file('scenes', arg, "#{arg}.world", order: :specific_first)
+                    filtered_argv << resolved_path
+                elsif resolved_path = Bundles.find_file(arg, "#{arg}.world", order: :specific_first)
+                    filtered_argv << resolved_path
                 else
                     filtered_argv << arg
                 end

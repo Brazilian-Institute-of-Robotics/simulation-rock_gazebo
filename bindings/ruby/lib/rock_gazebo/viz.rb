@@ -58,6 +58,7 @@ module RockGazebo
             sdf.each_model(recursive: true) do |model|
                 models[model] = setup_model(conf, model, vizkit3d: vizkit3d, dir: File.dirname(scene_path))
             end
+            vizkit3d.setRootFrame(sdf.each_world.first.name)
             models
         end
 
