@@ -4,8 +4,6 @@ rock_library(rock_gazebo
 	DEPS_PKGCONFIG gazebo
                 orocos-rtt-gnulinux
                 orocos-rtt-corba-gnulinux
-                rock_gazebo-tasks-gnulinux
-                logger-tasks-gnulinux
                 std-typekit-gnulinux
                 std-transport-corba-gnulinux 
                 std-transport-mqueue-gnulinux 
@@ -14,8 +12,14 @@ rock_library(rock_gazebo
                 base-transport-corba-gnulinux 
                 base-transport-mqueue-gnulinux 
                 base-transport-typelib-gnulinux 
+                rock_gazebo-tasks-gnulinux
                 rock_gazebo-typekit-gnulinux
                 rock_gazebo-transport-corba-gnulinux
                 rock_gazebo-transport-mqueue-gnulinux
                 rock_gazebo-transport-typelib-gnulinux
+                logger-tasks-gnulinux
+                logger-typekit-gnulinux
+                logger-transport-corba-gnulinux
+                logger-transport-mqueue-gnulinux
+                logger-transport-typelib-gnulinux
 	DEPS_CMAKE Boost)
