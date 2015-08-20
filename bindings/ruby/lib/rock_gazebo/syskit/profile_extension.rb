@@ -58,10 +58,10 @@ module RockGazebo
                     producer.
                         prefer_deployed_tasks(/^gazebo:\w+:#{model.name}$/).
                         with_arguments('model_dev' => device).
-                        use_frames("#{srv.name}_source" => world_frame,
-                                   "#{srv.name}_target" => link.full_name).
+                        use_frames("#{srv.name}_source" => link.full_name,
+                                   "#{srv.name}_target" => world_frame).
                         select_service(srv)
-                    transformer.dynamic_transform producer, world_frame => link.full_name
+                    transformer.dynamic_transform producer, link.full_name => world_frame
                 end
             end
 
