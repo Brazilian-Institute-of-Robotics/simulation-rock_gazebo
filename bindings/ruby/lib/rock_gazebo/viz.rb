@@ -16,10 +16,18 @@ module RockGazebo
         end
 
         if start
-            models.each_value do |_, task_proxy|
+            models.each do |model, (_, task_proxy)|
                 task_proxy.on_reachable do
                     begin
                         if task_proxy.rtt_state == :PRE_OPERATIONAL
+                            task = Orocos.get(task_proxy.name)
+                            begin
+                                Orocos.conf.apply(task, ['default', model.name])
+                                STDERR.puts "#{task_proxy.name}: applied configuration section #{model.name}"
+                            rescue Orocos::TaskConfigurations::SectionNotFound => e
+                                STDERR.puts "#{task_proxy.name}: section #{model.name} not found, applying only default configuration (#{e.message})"
+                                Orocos.conf.apply(task, ['default'])
+                            end
                             task_proxy.configure
                         end
 
