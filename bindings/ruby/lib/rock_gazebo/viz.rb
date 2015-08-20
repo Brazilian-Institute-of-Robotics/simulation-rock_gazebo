@@ -37,10 +37,10 @@ module RockGazebo
 
                         state = task_proxy.rtt_state
                         if state != :RUNNING
-                            STDERR.puts "could not start #{task_name} (currently in state #{state})"
+                            STDERR.puts "could not start #{task_proxy.name} (currently in state #{state})"
                         end
                     rescue Exception => e
-                        STDERR.puts "failed to start #{task_name}: #{e}"
+                        STDERR.puts "failed to start #{task_proxy.name}: #{e}"
                     end
                 end
             end
