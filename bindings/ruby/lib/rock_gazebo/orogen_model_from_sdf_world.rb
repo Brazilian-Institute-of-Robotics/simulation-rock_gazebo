@@ -23,6 +23,12 @@ module RockGazebo
             deployment.task("gazebo:#{world.name}:#{model.name}", "rock_gazebo::ModelTask").
                 periodic(period)
 
+            model.each_sensor do |sensor|
+                if sensor.type == 'ray'
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.parent.name}:#{sensor.name}", "rock_gazebo::LaserScanTask").
+                        periodic(period)
+                end
+            end
             model.each_plugin do |plugin|
                 if plugin.filename =~ /gazebo_thruster/
                     deployment.task("gazebo:#{world.name}:#{model.name}:#{plugin.name}", "rock_gazebo::ThrusterTask").
