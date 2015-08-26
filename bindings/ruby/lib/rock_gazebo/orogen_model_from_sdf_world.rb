@@ -25,7 +25,7 @@ module RockGazebo
 
             model.each_sensor do |sensor|
                 if sensor.type == 'ray'
-                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.parent.name}:#{sensor.name}", "rock_gazebo::LaserScanTask").
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::LaserScanTask").
                         periodic(period)
                 end
             end
