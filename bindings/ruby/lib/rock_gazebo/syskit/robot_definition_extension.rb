@@ -92,7 +92,7 @@ module RockGazebo
                     device_m, driver_m = sensors_to_device(s)
                     if device_m
                         device(device_m, as: "#{s.name}_sensor", using: driver_m).
-                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.parent.name}:#{s.name}$/)
+                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.name}$/)
                     else
                         RockGazebo.warn "Robot#load_sdf: don't know how to handle sensor #{s.full_name} of type #{s.type}"
                     end
