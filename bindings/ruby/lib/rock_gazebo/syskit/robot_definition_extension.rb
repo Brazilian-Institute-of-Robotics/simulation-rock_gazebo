@@ -63,7 +63,8 @@ module RockGazebo
                 models.each do |m|
                     device(Rock::Devices::Gazebo::Model, as: m.name,
                            using: OroGen::RockGazebo::ModelTask).
-                           prefer_deployed_tasks(/^gazebo:#{world_name}:#{m.name}$/)
+                           prefer_deployed_tasks(/^gazebo:#{world_name}:#{m.name}$/).
+                           advanced
                 end
             end
 
@@ -72,6 +73,7 @@ module RockGazebo
             # Define devices for all links and sensors in the model
             def load_sdf_robot_model(model, name: model.name, world_name: 'world')
                 driver_m = OroGen::RockGazebo::ModelTask
+                find_device(model.name).advanced = false
                 model.each_link do |l|
                     link_driver_m = driver_m.specialize
                     frame_basename = l.name.gsub(/[^\w]+/, '_')
@@ -83,13 +85,14 @@ module RockGazebo
                         use_frames("#{frame_basename}_source" => l.full_name,
                                    "#{frame_basename}_target" => world_name).
                         select_service(driver_srv)
-                    device(Rock::Devices::Gazebo::Link, as: "#{l.name}_link", using: link_driver_m)
+                    device(Rock::Devices::Gazebo::Link, as: "#{l.name}_link", using: link_driver_m).
+                        advanced
                 end
                 model.each_sensor do |s|
                     device_m, driver_m = sensors_to_device(s)
                     if device_m
                         device(device_m, as: "#{s.name}_sensor", using: driver_m).
-                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.parent.name}:#{s.name}$/)
+                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.name}$/)
                     else
                         RockGazebo.warn "Robot#load_sdf: don't know how to handle sensor #{s.full_name} of type #{s.type}"
                     end
