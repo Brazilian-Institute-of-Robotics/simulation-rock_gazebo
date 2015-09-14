@@ -64,7 +64,8 @@ module RockGazebo
                     device(Rock::Devices::Gazebo::Model, as: m.name,
                            using: OroGen::RockGazebo::ModelTask).
                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{m.name}$/).
-                           advanced
+                           advanced.
+                           frame_transform(m.name => world_name)
                 end
             end
 
