@@ -27,6 +27,12 @@ module RockGazebo
                 if sensor.type == 'ray'
                     deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::LaserScanTask").
                         periodic(period)
+                elsif sensor.type == 'camera'
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::CameraTask").
+                        periodic(period)
+                elsif sensor.type == 'imu'
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::ImuTask").
+                        periodic(period)
                 end
             end
             model.each_plugin do |plugin|
