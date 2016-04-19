@@ -15,6 +15,8 @@
 #include <rock_gazebo/WorldTask.hpp>
 #include <rock_gazebo/ThrusterTask.hpp>
 #include <rock_gazebo/LaserScanTask.hpp>
+#include <rock_gazebo/CameraTask.hpp>
+#include <rock_gazebo/ImuTask.hpp>
 #include <rock_gazebo/typekit/Plugin.hpp>
 #include <rock_gazebo/transports/corba/TransportPlugin.hpp>
 #include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
@@ -202,6 +204,22 @@ void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, Model
                 string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/scan";
                 laser_line_task->setGazeboModel( model, sensorName, topicName );
                 setupTaskActivity( laser_line_task );
+            }
+            else if(sensorType == "camera")
+            {
+                gzmsg << "RockBridge: creating camera component: " + sensorName << endl;
+                CameraTask* camera = new CameraTask();
+                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/image";
+                camera->setGazeboModel(model, sensorName, topicName);
+                setupTaskActivity(camera);
+            }
+            else if(sensorType == "imu")
+            {
+                gzmsg << "RockBridge: creating imu component: " + sensorName << endl;
+                ImuTask *imu = new ImuTask();
+                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/imu";
+                imu->setGazeboModel(model, sensorName, topicName);
+                setupTaskActivity(imu);
             }
 
             sensorElement = sensorElement->GetNextElement("sensor");

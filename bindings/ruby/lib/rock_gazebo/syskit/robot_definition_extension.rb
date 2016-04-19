@@ -22,6 +22,12 @@ module RockGazebo
                 when 'ray'
                     require 'rock/models/devices/gazebo/ray'
                     return Rock::Devices::Gazebo::Ray, OroGen::RockGazebo::LaserScanTask
+                when 'imu'
+                    require 'rock/models/devices/gazebo/imu'
+                    return Rock::Devices::Gazebo::Imu, OroGen::RockGazebo::ImuTask
+                when 'camera'
+                    require 'rock/models/devices/gazebo/camera'
+                    return Rock::Devices::Gazebo::Camera, OroGen::RockGazebo::CameraTask
                 end
             end
 

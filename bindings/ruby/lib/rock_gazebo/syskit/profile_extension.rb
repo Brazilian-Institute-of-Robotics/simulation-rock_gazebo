@@ -30,9 +30,9 @@ module RockGazebo
 
                     models = SDF::Root.load(full_path).each_model.to_a
                     if models.size > 1
-                        raise ArgumentError, "#{full_path} has more than one model, cannot use in use_sdf_model"
+                        raise ArgumentError, "#{full_path} has more than one top level model, cannot use in use_sdf_model"
                     elsif models.empty?
-                        raise ArgumentError, "#{full_path} has no models, cannot use in use_sdf_model"
+                        raise ArgumentError, "#{full_path} has no top level model, cannot use in use_sdf_model"
                     end
                     models.first
                 end

@@ -77,6 +77,12 @@ module RockGazebo
                 world_task = task(world_task.name)
                 true
             rescue Orocos::NotFound
+                @last_error_message ||= Time.now
+                if(Time.now-@last_error_message).to_f > 5.0
+                    ::Robot.warn "#{name}: Waiting for Gazebo Sever."
+                    ::Robot.warn "You have to start the simulation via 'rock-gzserver WORLD_FILE'."
+                    @last_error_message = Time.now
+                end
                 false
             end
 
