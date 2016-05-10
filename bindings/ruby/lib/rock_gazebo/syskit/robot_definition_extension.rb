@@ -54,11 +54,11 @@ module RockGazebo
             # @raise [ArgumentError] if models does not contain robot_model
             def load_sdf(robot_model, world_name: 'world', name: robot_model.name, models: [robot_model])
                 @sdf_world_name = world_name.to_str
-
-                expose_sdf_models(models, world_name: world_name)
                 if !models.any? { |m| m.name == name }
                     raise ArgumentError, "the set of models given to #load_sdf has no model named #{name}"
                 end
+
+                expose_sdf_models(models, world_name: world_name)
                 load_sdf_robot_model(robot_model, name: name, world_name: world_name)
             end
 
@@ -70,8 +70,7 @@ module RockGazebo
                     device(Rock::Devices::Gazebo::Model, as: m.name,
                            using: OroGen::RockGazebo::ModelTask).
                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{m.name}$/).
-                           advanced.
-                           frame_transform(m.name => world_name)
+                           advanced
                 end
             end
 
