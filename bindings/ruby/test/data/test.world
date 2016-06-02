@@ -1,6 +1,0 @@
-<sdf version="1.5">
-    <world name="underwater">
-        <model name="flat_fish" />
-        <model name="oil_rig" />
-    </world>
-</sdf>
