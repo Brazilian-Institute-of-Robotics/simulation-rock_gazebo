@@ -1,9 +1,11 @@
 require 'rock/bundles'
-require 'rock_gazebo/path_to_plugin'
+require 'rock/gazebo/path_to_plugin'
 require 'sdf'
 
 module Rock
     module Gazebo
+        extend Logger::Root('Rock::Gazebo', Logger::WARN)
+
         def self.default_model_path
             Bundles.find_dirs('models', 'sdf', all: true, order: :specific_first) +
                 (ENV['GAZEBO_MODEL_PATH']||"").split(':') +

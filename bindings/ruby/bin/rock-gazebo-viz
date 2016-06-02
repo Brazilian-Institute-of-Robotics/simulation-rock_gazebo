@@ -33,7 +33,7 @@ if path.size != 1
 end
 path = path.first
 
-require 'rock_gazebo/viz'
-RockGazebo.viz(path, env: env_plugin_name, start: start)
+require 'rock/gazebo/viz'
+Rock::Gazebo.viz(path, env: env_plugin_name, start: start)
 
 Vizkit.exec

@@ -9,6 +9,6 @@ if (rock_AVAILABLE)
                     GROUP_READ GROUP_EXECUTE
                     WORLD_READ WORLD_EXECUTE)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/path_to_plugin.rb
-        DESTINATION ${RUBY_LIBRARY_INSTALL_DIR}/rock_gazebo)
+        DESTINATION ${RUBY_LIBRARY_INSTALL_DIR}/rock/gazebo)
 endif()
 
