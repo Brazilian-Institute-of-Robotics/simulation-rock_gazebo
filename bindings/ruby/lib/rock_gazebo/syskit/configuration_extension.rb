@@ -5,9 +5,17 @@ module RockGazebo
             #
             # @return [Syskit::Deployment] a deployment object that represents
             #   gazebo itself
-            def use_gazebo_world(*path)
-                if Conf.gazebo.has_profile_loaded?
+            def use_gazebo_world(*path, world_name: nil)
+                if Conf.gazebo.world?
+                    raise LoadError, "use_gazebo_world already called"
+                elsif Conf.gazebo.has_profile_loaded?
                     raise LoadError, "you need to call #use_gazebo_world before require'ing any profile that uses #use_sdf_model"
+                end
+
+                if Conf.gazebo.world_file_path?
+                    override_path = Conf.gazebo.world_file_path
+                    Robot.warn "world_file_path set on Conf.gazebo with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_gazebo_world"
+                    path = override_path
                 end
 
                 _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([File.join(*path)])
