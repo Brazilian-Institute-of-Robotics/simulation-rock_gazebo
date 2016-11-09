@@ -17,17 +17,38 @@ module RockGazebo
                 end
                 SDF::XML.model_path = Rock::Gazebo.model_path
 
-                # Add the process manager if needed
-                if !has_process_server?('gazebo')
-                    register_process_server('gazebo', WorldManager.new(app.default_loader), app.log_dir)
-                end
+                world = ConfigurationExtension.world_from_path(full_path)
+                deployment_model = ConfigurationExtension.world_to_orogen(world)
 
-                world_manager = process_server_for('gazebo')
-                orogen, world = world_manager.register_world(full_path)
-                deployment = use_deployment(orogen, on: 'gazebo')
+                configured_deployment = ::Syskit::Models::ConfiguredDeployment.
+                    new('unmanaged_tasks', deployment_model, Hash[], deployment_model.name, Hash.new)
+                register_configured_deployment(configured_deployment)
                 Conf.gazebo.world_file_path = full_path
                 Conf.gazebo.world = world
-                deployment
+                configured_deployment
+            end
+
+            def self.world_from_path(path, world_name: nil)
+                worlds = SDF::Root.load(path).each_world.to_a
+                if world_name
+                    world = worlds.find { |w| w.name == world_name }
+                    if !world
+                        raise ArgumentError, "cannot find a world named #{world_name} in #{path}"
+                    end
+                    return world
+                elsif worlds.size == 1
+                    return worlds.first
+                elsif worlds.empty?
+                    raise ArgumentError, "no worlds declared in #{path}"
+                else
+                    raise ArgumentError, "more than one world declared in #{path}, select one explicitely by providing the world_name argument"
+                end
+            end
+
+            def self.world_to_orogen(world)
+                ::Syskit::Deployment.new_submodel(name: "Deployment::Gazebo::#{world.name}") do
+                    RockGazebo.setup_orogen_model_from_sdf_world(self, world)
+                end
             end
         end
 
