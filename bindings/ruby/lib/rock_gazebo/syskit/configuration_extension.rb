@@ -28,8 +28,15 @@ module RockGazebo
                 world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
                 deployment_model = ConfigurationExtension.world_to_orogen(world)
 
+                process_server_config =
+                    if app.simulation?
+                        sim_process_server('unmanaged_tasks')
+                    else
+                        process_server_config_for('unmanaged_tasks')
+                    end
+
                 configured_deployment = ::Syskit::Models::ConfiguredDeployment.
-                    new('unmanaged_tasks', deployment_model, Hash[], deployment_model.name, Hash.new)
+                    new(process_server_config.name, deployment_model, Hash[], "gazebo:#{world.name}", Hash.new)
                 register_configured_deployment(configured_deployment)
                 Conf.gazebo.world_file_path = full_path
                 Conf.gazebo.world = world
