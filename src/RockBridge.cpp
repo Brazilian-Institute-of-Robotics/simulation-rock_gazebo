@@ -47,6 +47,10 @@ RockBridge::RockBridge()
 
 RockBridge::~RockBridge()
 {
+    // Deregister the CORBA stuff
+    RTT::corba::TaskContextServer::CleanupServers();
+    RTT::corba::CorbaDispatcher::ReleaseAll();
+
     // Delete pointers to activity
     for(Activities::iterator activity_it = activities.begin();
             activity_it != activities.end(); ++activity_it)
