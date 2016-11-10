@@ -16,7 +16,7 @@ module RockGazebo
                 end
 
                 # Start a Gazebo instance
-                def gazebo_start(*args, ui: false)
+                def gazebo_start(*args, ui: false, working_directory: Dir.pwd)
                     if gazebo_running?
                         raise InvalidState, "a Gazebo instance is already running, stop it with {#gazebo_stop} and/or join it with {#gazebo_join}"
                     end
@@ -26,7 +26,11 @@ module RockGazebo
                         else 'gzserver'
                         end
 
-                    @gazebo_pid = Rock::Gazebo.spawn(bin_name, *args, pgroup: 0)
+                    Tempfile.open 'rock_gazebo', working_directory do |tempfile|
+                        @gazebo_pid = Rock::Gazebo.spawn(bin_name, *args, pgroup: 0,
+                                                         chdir: working_directory)
+                        FileUtils.mv tempfile, File.join(working_directory, "#{File.basename(bin_name)}.#{@gazebo_pid}.txt")
+                    end
                 end
 
                 # Stop the running Gazebo instance
