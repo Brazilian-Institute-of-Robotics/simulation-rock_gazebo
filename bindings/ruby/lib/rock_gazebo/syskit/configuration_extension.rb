@@ -14,7 +14,7 @@ module RockGazebo
 
                 if Conf.gazebo.world_file_path?
                     override_path = Conf.gazebo.world_file_path
-                    Robot.warn "world_file_path set on Conf.gazebo with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_gazebo_world"
+                    Robot.info "world_file_path set on Conf.gazebo with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_gazebo_world"
                     path = override_path
                 end
 
