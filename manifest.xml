@@ -8,6 +8,7 @@
   <logo>http://</logo>
   <depend package="base/cmake" />
   <depend package="simulation/gazebo" />
+  <depend package="tools/logger" />
   <depend package="simulation/orogen/rock_gazebo" />
 
   <depend_optional package="control/ruby_sdformat" />
