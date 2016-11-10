@@ -34,6 +34,7 @@
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+#include <rtt/transports/corba/CorbaDispatcher.hpp>
 
 
 using namespace std;
@@ -150,6 +151,7 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 {
     // Export the component interface on CORBA to Ruby access the component
     RTT::corba::TaskContextServer::Create( task );
+    RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
 
     // Create and start sequential task activities
     RTT::extras::SequentialActivity* activity =
