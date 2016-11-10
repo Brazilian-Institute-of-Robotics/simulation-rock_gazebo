@@ -25,7 +25,7 @@ module RockGazebo
                 end
                 SDF::XML.model_path = Rock::Gazebo.model_path
 
-                world = ConfigurationExtension.world_from_path(full_path)
+                world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
                 deployment_model = ConfigurationExtension.world_to_orogen(world)
 
                 configured_deployment = ::Syskit::Models::ConfiguredDeployment.
