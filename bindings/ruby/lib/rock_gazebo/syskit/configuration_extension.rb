@@ -5,7 +5,7 @@ module RockGazebo
             #
             # @return [Syskit::Deployment] a deployment object that represents
             #   gazebo itself
-            def use_gazebo_world(*path, world_name: nil)
+            def use_gazebo_world(*path, world_name: nil, localhost: Conf.gazebo.localhost?)
                 if Conf.gazebo.world?
                     raise LoadError, "use_gazebo_world already called"
                 elsif Conf.gazebo.has_profile_loaded?
@@ -28,11 +28,17 @@ module RockGazebo
                 world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
                 deployment_model = ConfigurationExtension.world_to_orogen(world)
 
+                if !has_process_server?('gazebo')
+                    options = Hash[host_id: 'localhost'] if localhost
+                    ::Syskit.conf.register_process_server(
+                        'gazebo', ::Syskit::RobyApp::UnmanagedTasksManager.new, app.log_dir, **options)
+                end
+
                 process_server_config =
                     if app.simulation?
-                        sim_process_server('unmanaged_tasks')
+                        sim_process_server('gazebo')
                     else
-                        process_server_config_for('unmanaged_tasks')
+                        process_server_config_for('gazebo')
                     end
 
                 configured_deployment = ::Syskit::Models::ConfiguredDeployment.
