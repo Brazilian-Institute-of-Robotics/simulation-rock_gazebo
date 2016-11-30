@@ -29,7 +29,11 @@ module RockGazebo
                 deployment_model = ConfigurationExtension.world_to_orogen(world)
 
                 if !has_process_server?('gazebo')
-                    options = Hash[host_id: 'localhost'] if localhost
+                    if localhost
+                        options = Hash[host_id: 'localhost'] 
+                    else
+                        options = Hash.new
+                    end
                     ::Syskit.conf.register_process_server(
                         'gazebo', ::Syskit::RobyApp::UnmanagedTasksManager.new, app.log_dir, **options)
                 end
