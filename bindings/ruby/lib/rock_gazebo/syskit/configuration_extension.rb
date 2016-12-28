@@ -1,31 +1,38 @@
 module RockGazebo
     module Syskit
         module ConfigurationExtension
+            # Load a SDF world into the Syskit instance
+            def use_sdf_world(*path, world_name: nil)
+                if Conf.sdf.world?
+                    raise LoadError, "use_sdf_world already called"
+                elsif Conf.sdf.has_profile_loaded?
+                    raise LoadError, "you need to call #use_sdf_world before require'ing any profile that uses #use_sdf_model"
+                end
+
+                if Conf.sdf.world_path?
+                    override_path = Conf.sdf.world_path
+                    Robot.info "world_file_path set on Conf.sdf.world_path with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_sdf_world"
+                    path = override_path
+                end
+
+                path = File.join(*path)
+                _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([path])
+                full_path = resolved_paths.first
+                if !File.file?(full_path)
+                    raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
+                end
+                SDF::XML.model_path = Rock::Gazebo.model_path
+                world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
+                Conf.sdf.world_file_path = full_path
+                Conf.sdf.world = world
+            end
+
             # Sets up Syskit to use gazebo configured to use the given world 
             #
             # @return [Syskit::Deployment] a deployment object that represents
             #   gazebo itself
             def use_gazebo_world(*path, world_name: nil, localhost: Conf.gazebo.localhost?)
-                if Conf.gazebo.world?
-                    raise LoadError, "use_gazebo_world already called"
-                elsif Conf.gazebo.has_profile_loaded?
-                    raise LoadError, "you need to call #use_gazebo_world before require'ing any profile that uses #use_sdf_model"
-                end
-
-                if Conf.gazebo.world_file_path?
-                    override_path = Conf.gazebo.world_file_path
-                    Robot.info "world_file_path set on Conf.gazebo with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_gazebo_world"
-                    path = override_path
-                end
-
-                _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([File.join(*path)])
-                full_path = resolved_paths.first
-                if !File.file?(full_path)
-                    raise ArgumentError, "#{File.join(*path)} cannot be resolved to a valid gazebo world"
-                end
-                SDF::XML.model_path = Rock::Gazebo.model_path
-
-                world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
+                world = use_sdf_world(*path, world_name: world_name)
                 deployment_model = ConfigurationExtension.world_to_orogen(world)
 
                 if !has_process_server?('gazebo')
@@ -48,8 +55,6 @@ module RockGazebo
                 configured_deployment = ::Syskit::Models::ConfiguredDeployment.
                     new(process_server_config.name, deployment_model, Hash[], "gazebo:#{world.name}", Hash.new)
                 register_configured_deployment(configured_deployment)
-                Conf.gazebo.world_file_path = full_path
-                Conf.gazebo.world = world
                 configured_deployment
             end
 

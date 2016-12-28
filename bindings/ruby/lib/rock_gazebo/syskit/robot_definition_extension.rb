@@ -52,20 +52,20 @@ module RockGazebo
             #   robot_model
             # @return [void]
             # @raise [ArgumentError] if models does not contain robot_model
-            def load_sdf(robot_model, world_name: 'world', name: robot_model.name, models: [robot_model])
+            def load_gazebo(robot_model, world_name: 'world', name: robot_model.name, models: [robot_model])
                 @sdf_world_name = world_name.to_str
                 if !models.any? { |m| m.name == name }
-                    raise ArgumentError, "the set of models given to #load_sdf has no model named #{name}"
+                    raise ArgumentError, "the set of models given to #load_gazebo has no model named #{name}"
                 end
 
-                expose_sdf_models(models, world_name: world_name)
-                load_sdf_robot_model(robot_model, name: name, world_name: world_name)
+                expose_gazebo_models(models, world_name: world_name)
+                load_gazebo_robot_model(robot_model, name: name, world_name: world_name)
             end
 
             # @api private
             #
             # Define devices for each model in the world
-            def expose_sdf_models(models, world_name: 'world')
+            def expose_gazebo_models(models, world_name: 'world')
                 models.each do |m|
                     device(Rock::Devices::Gazebo::Model, as: m.name,
                            using: OroGen::RockGazebo::ModelTask).
@@ -77,7 +77,7 @@ module RockGazebo
             # @api private
             #
             # Define devices for all links and sensors in the model
-            def load_sdf_robot_model(model, name: model.name, world_name: 'world')
+            def load_gazebo_robot_model(model, name: model.name, world_name: 'world')
                 driver_m = OroGen::RockGazebo::ModelTask
                 find_device(model.name).advanced = false
                 model.each_link do |l|
@@ -100,7 +100,7 @@ module RockGazebo
                         device(device_m, as: "#{s.name}_sensor", using: driver_m).
                             prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.name}$/)
                     else
-                        RockGazebo.warn "Robot#load_sdf: don't know how to handle sensor #{s.full_name} of type #{s.type}"
+                        RockGazebo.warn "Robot#load_gazebo: don't know how to handle sensor #{s.full_name} of type #{s.type}"
                     end
                 end
             end
