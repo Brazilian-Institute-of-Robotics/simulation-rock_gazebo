@@ -17,17 +17,20 @@ module RockGazebo
             #   rock-gazebo plugin or by the syskit integration (yet), or the
             #   device model and device driver that should be used for this
             #   sensor
-            def sensors_to_device(sensor)
+            def sensors_to_device(sensor, device_name, frame_name, world_name: 'world')
                 case sensor.type
                 when 'ray'
                     require 'rock/models/devices/gazebo/ray'
-                    return Rock::Devices::Gazebo::Ray, OroGen::RockGazebo::LaserScanTask
+                    device(Rock::Devices::Gazebo::Ray, as: device_name, using: OroGen::RockGazebo::LaserScanTask).
+                        frame(frame_name)
                 when 'imu'
                     require 'rock/models/devices/gazebo/imu'
-                    return Rock::Devices::Gazebo::Imu, OroGen::RockGazebo::ImuTask
+                    device(Rock::Devices::Gazebo::Imu, as: device_name, using: OroGen::RockGazebo::ImuTask).
+                        frame_transform(frame_name => world_name)
                 when 'camera'
                     require 'rock/models/devices/gazebo/camera'
-                    return Rock::Devices::Gazebo::Camera, OroGen::RockGazebo::CameraTask
+                    device(Rock::Devices::Gazebo::Camera, as: device_name, using: OroGen::RockGazebo::CameraTask).
+                        frame(frame_name)
                 end
             end
 
@@ -95,10 +98,8 @@ module RockGazebo
                         advanced
                 end
                 model.each_sensor do |s|
-                    device_m, driver_m = sensors_to_device(s)
-                    if device_m
-                        device(device_m, as: "#{s.name}_sensor", using: driver_m).
-                            prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.name}$/)
+                    if device = sensors_to_device(s, "#{s.name}_sensor", s.parent.full_name, world_name: world_name)
+                        device.prefer_deployed_tasks(/^gazebo:#{world_name}:#{name}:#{s.name}$/)
                     else
                         RockGazebo.warn "Robot#load_gazebo: don't know how to handle sensor #{s.full_name} of type #{s.type}"
                     end
