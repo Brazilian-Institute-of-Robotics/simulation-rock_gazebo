@@ -27,6 +27,39 @@ module RockGazebo
                 end
             end
 
+            # Setup a link export feature of rock_gazebo::ModelTask
+            #
+            # @param [Syskit::Robot::MasterDeviceInstance] model_dev the model device that has the requested links
+            # @param [String] as the name of the newly created device. It is
+            #   also the name of the created port on the model task
+            # @param [String] from_frame the 'from' frame of the exported link,
+            #   which must match a link, model or frame name on the SDF model
+            # @param [String] to_frame the 'to' frame of the exported link,
+            #   which must match a link, model or frame name on the SDF model
+            # @return [Syskit::Robot::MasterDeviceInstance] the exported link as
+            #   a device instance of type Rock::Devices::Gazebo::Link
+            def sdf_export_link(model_dev, as: nil, from_frame: nil, to_frame: nil)
+                if !as
+                    raise ArgumentError, "provide a name for the device and port through the 'as' option"
+                elsif !from_frame
+                    raise ArgumentError, "provide a name for the 'from' frame through the 'from_frame' option"
+                elsif !to_frame
+                    raise ArgumentError, "provide a name for the 'to' frame through the 'to_frame' option"
+                end
+
+                link_driver = model_dev.to_instance_requirements.to_component_model.dup
+                link_driver_m = OroGen::RockGazebo::ModelTask.specialize
+                link_driver_srv = link_driver_m.require_dynamic_service(
+                    'link_export', as: as, frame_basename: as)
+
+                link_driver.add_models([link_driver_m])
+                link_driver.
+                    use_frames("#{as}_source" => from_frame,
+                               "#{as}_target" => to_frame).
+                               select_service(link_driver_srv)
+                device(Rock::Devices::Gazebo::Link, as: as, using: link_driver)
+            end
+
             # Create device information that models how the rock-gazebo plugin
             # will handle this SDF model
             #
