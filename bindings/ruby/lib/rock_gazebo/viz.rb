@@ -99,6 +99,7 @@ module RockGazebo
                              frame_name: model.name,
                              parent_frame_name: default_parent_frame_name(model))
             model_viz = Vizkit.default_loader.RobotVisualization
+            model_viz.setPluginName(model.full_name)
 
             model_only = model.make_root
             model_viz.loadFromString(model_only.xml.to_s, 'sdf', dir)
