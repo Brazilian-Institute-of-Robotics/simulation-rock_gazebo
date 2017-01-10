@@ -8,6 +8,8 @@ require 'transformer/sdf'
 require 'rock_gazebo/syskit/configuration_extension'
 require 'rock_gazebo/syskit/profile_extension'
 require 'rock_gazebo/syskit/robot_definition_extension'
+require 'rock_gazebo/syskit/instance_requirements_extension'
+require 'rock_gazebo/syskit/master_device_instance_extension'
 
 module RockGazebo
     extend Logger::Root('RockGazebo', Logger::WARN)

@@ -57,7 +57,12 @@ module RockGazebo
                     use_frames("#{as}_source" => from_frame,
                                "#{as}_target" => to_frame).
                                select_service(link_driver_srv)
-                device(Rock::Devices::Gazebo::Link, as: as, using: link_driver)
+
+                dev = device(Rock::Devices::Gazebo::Link, as: as, using: link_driver)
+                if from_frame != to_frame
+                    dev.frame_transform(from_frame => to_frame)
+                end
+                dev
             end
 
             # Create device information that models how the rock-gazebo plugin
