@@ -24,6 +24,10 @@ module RockGazebo
                     require 'rock/models/devices/gazebo/camera'
                     device(Rock::Devices::Gazebo::Camera, as: device_name, using: OroGen::RockGazebo::CameraTask).
                         frame(frame_name)
+                when 'gps'
+                    require 'rock/models/devices/gazebo/gps'
+                    device(Rock::Devices::Gazebo::GPS, as: device_name, using: OroGen::RockGazebo::GPSTask).
+                        frame_transform(frame_name => 'world')
                 end
             end
 

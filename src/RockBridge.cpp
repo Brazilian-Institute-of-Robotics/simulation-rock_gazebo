@@ -17,6 +17,7 @@
 #include <rock_gazebo/LaserScanTask.hpp>
 #include <rock_gazebo/CameraTask.hpp>
 #include <rock_gazebo/ImuTask.hpp>
+#include <rock_gazebo/GPSTask.hpp>
 #include <rock_gazebo/typekit/Plugin.hpp>
 #include <rock_gazebo/transports/corba/TransportPlugin.hpp>
 #include <rock_gazebo/transports/typelib/TransportPlugin.hpp>
@@ -27,6 +28,11 @@
 #include <logger/transports/corba/TransportPlugin.hpp>
 #include <logger/transports/typelib/TransportPlugin.hpp>
 #include <logger/transports/mqueue/TransportPlugin.hpp>
+
+#include <gps_base/typekit/Plugin.hpp>
+#include <gps_base/transports/corba/TransportPlugin.hpp>
+#include <gps_base/transports/typelib/TransportPlugin.hpp>
+#include <gps_base/transports/mqueue/TransportPlugin.hpp>
 
 #include <rtt/Activity.hpp>
 #include <rtt/TaskContext.hpp>
@@ -69,7 +75,6 @@ RockBridge::~RockBridge()
     RTT::corba::TaskContextServer::DestroyOrb();
 }
 
-
 void RockBridge::Load(int _argc , char** _argv)
 {
     RTT::corba::ApplicationServer::InitOrb(_argc, _argv);
@@ -85,6 +90,11 @@ void RockBridge::Load(int _argc , char** _argv)
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseCorbaTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseMQueueTransportPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::baseTypelibTransportPlugin);
+
+    RTT::types::TypekitRepository::Import(new orogen_typekits::gps_baseTypekitPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::gps_baseCorbaTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::gps_baseMQueueTransportPlugin);
+    RTT::types::TypekitRepository::Import(new orogen_typekits::gps_baseTypelibTransportPlugin);
 
     RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboTypekitPlugin);
     RTT::types::TypekitRepository::Import(new orogen_typekits::rock_gazeboCorbaTransportPlugin);
@@ -221,6 +231,8 @@ void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, Model
                 setupSensorTask<CameraTask>(model, sensorElement);
             else if(sensorType == "imu")
                 setupSensorTask<ImuTask>(model, sensorElement);
+            else if (sensorType == "gps")
+                setupSensorTask<GPSTask>(model, sensorElement);
             else
                 gzmsg << "RockGazebo: cannot handle sensor " << sensorName << " of type " << sensorType << endl;
 

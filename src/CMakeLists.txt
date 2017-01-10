@@ -12,6 +12,10 @@ rock_library(rock_gazebo
                 base-transport-corba-gnulinux 
                 base-transport-mqueue-gnulinux 
                 base-transport-typelib-gnulinux 
+                gps_base-typekit-gnulinux
+                gps_base-transport-corba-gnulinux 
+                gps_base-transport-mqueue-gnulinux 
+                gps_base-transport-typelib-gnulinux 
                 rock_gazebo-tasks-gnulinux
                 rock_gazebo-typekit-gnulinux
                 rock_gazebo-transport-corba-gnulinux
