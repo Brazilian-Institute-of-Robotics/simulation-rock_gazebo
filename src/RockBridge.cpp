@@ -195,6 +195,17 @@ void RockBridge::instantiatePluginComponents(sdf::ElementPtr modelElement, Model
     }
 }
 
+template<typename RockTask>
+void RockBridge::setupSensorTask(ModelPtr model, sdf::ElementPtr sensorElement)
+{
+    string sensorName = sensorElement->Get<string>("name");
+    string sensorType = sensorElement->Get<string>("type");
+    gzmsg << "RockBridge: creating " << sensorType << " component: " + sensorName << endl;
+    rock_gazebo::SensorTask* task = new RockTask();
+    task->setGazeboModel(model, sensorElement);
+    setupTaskActivity(task);
+}
+
 void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, ModelPtr model)
 {
     sdf::ElementPtr linkElement = modelElement->GetElement("link");
@@ -203,31 +214,15 @@ void RockBridge::instantiateSensorComponents(sdf::ElementPtr modelElement, Model
         while( sensorElement ){
             string sensorName = sensorElement->Get<string>("name");
             string sensorType = sensorElement->Get<string>("type");
-            // To support more sensors, test for different sensors types
-            if( sensorType == "ray" )
-            {
-                gzmsg << "RockBridge: creating laser line component: " + sensorName << endl;
-                LaserScanTask* laser_line_task = new LaserScanTask();
-                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/scan";
-                laser_line_task->setGazeboModel( model, sensorName, topicName );
-                setupTaskActivity( laser_line_task );
-            }
+
+            if (sensorType == "ray")
+                setupSensorTask<LaserScanTask>(model, sensorElement);
             else if(sensorType == "camera")
-            {
-                gzmsg << "RockBridge: creating camera component: " + sensorName << endl;
-                CameraTask* camera = new CameraTask();
-                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/image";
-                camera->setGazeboModel(model, sensorName, topicName);
-                setupTaskActivity(camera);
-            }
+                setupSensorTask<CameraTask>(model, sensorElement);
             else if(sensorType == "imu")
-            {
-                gzmsg << "RockBridge: creating imu component: " + sensorName << endl;
-                ImuTask *imu = new ImuTask();
-                string topicName = model->GetName() + "/" + linkElement->Get<string>("name") + "/" + sensorName + "/imu";
-                imu->setGazeboModel(model, sensorName, topicName);
-                setupTaskActivity(imu);
-            }
+                setupSensorTask<ImuTask>(model, sensorElement);
+            else
+                gzmsg << "RockGazebo: cannot handle sensor " << sensorName << " of type " << sensorType << endl;
 
             sensorElement = sensorElement->GetNextElement("sensor");
         }
