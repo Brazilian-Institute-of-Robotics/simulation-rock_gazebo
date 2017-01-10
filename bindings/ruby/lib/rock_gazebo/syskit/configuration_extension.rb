@@ -19,7 +19,11 @@ module RockGazebo
                 _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([path])
                 full_path = resolved_paths.first
                 if !File.file?(full_path)
-                    raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
+                    if File.file?(model_sdf = File.join(full_path, 'model.sdf'))
+                        full_path = model_sdf
+                    else
+                        raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
+                    end
                 end
                 SDF::XML.model_path = Rock::Gazebo.model_path
                 world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
