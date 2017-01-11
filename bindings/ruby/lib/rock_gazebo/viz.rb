@@ -28,6 +28,7 @@ module RockGazebo
                                 STDERR.puts "#{task_proxy.name}: section #{model.name} not found, applying only default configuration (#{e.message})"
                                 Orocos.conf.apply(task, ['default'])
                             end
+                            task.world_frame = 'world'
                             task_proxy.configure
                         end
 
