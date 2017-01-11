@@ -58,13 +58,16 @@ module RockGazebo
         #   mapping from a model name to the vizkit3d plugin and task proxy that
         #   represent it
         def self.setup_scene(scene_path, vizkit3d: Vizkit.vizkit3d_widget)
-            conf = Transformer::Configuration.new
-            conf.load_sdf(scene_path)
-            vizkit3d.apply_transformer_configuration(conf)
-
             models = Hash.new
             sdf = SDF::Root.load(scene_path)
             world = sdf.each_world.first
+
+            conf = Transformer::Configuration.new
+            conf.load_sdf(scene_path)
+            conf.rename_frames world.name => 'world'
+            conf.static_transform Eigen::Vector3.Zero, world.name => 'world'
+            vizkit3d.apply_transformer_configuration(conf)
+
             sdf.each_model(recursive: true) do |model|
                 parent_frame_name =
                     if model.parent == world
