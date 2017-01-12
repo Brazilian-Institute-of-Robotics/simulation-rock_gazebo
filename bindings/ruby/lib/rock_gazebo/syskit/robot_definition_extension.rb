@@ -96,12 +96,15 @@ module RockGazebo
             # @api private
             #
             # Define devices for each model in the world
+            #
+            # @param [Array<SDF::Model>] models the SDF representation of the models
             def expose_gazebo_models(models, deployment_prefix)
                 models.each do |m|
                     device(Rock::Devices::Gazebo::Model, as: m.name,
                            using: OroGen::RockGazebo::ModelTask).
                            prefer_deployed_tasks("#{deployment_prefix}:#{m.name}").
-                           advanced
+                           advanced.
+                           sdf(m)
                 end
             end
 
@@ -127,7 +130,7 @@ module RockGazebo
                 end
                 model.each_sensor do |s|
                     if device = sensors_to_device(s, "#{s.name}_sensor", s.parent.full_name)
-                        device.prefer_deployed_tasks("#{deployment_prefix}:#{name}:#{s.name}")
+                        device.sdf(s).prefer_deployed_tasks("#{deployment_prefix}:#{name}:#{s.name}")
                     else
                         RockGazebo.warn "Robot#load_gazebo: don't know how to handle sensor #{s.full_name} of type #{s.type}"
                     end
