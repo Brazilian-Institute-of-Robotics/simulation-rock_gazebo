@@ -85,19 +85,55 @@ describe "The Rock/Gazebo plugin" do
         end
 
         it "converts the position to the configured UTM frame" do
-            sample = read_sample 'gps.world', 'position_samples' do |task|
-                task.origin = Eigen::Vector3.Zero
+            sample = read_sample 'gps.world', 'utm_samples' do |task|
+                task.gps_frame = 'gps_test'
+                task.utm_frame = 'utm_test'
+                task.nwu_origin = Eigen::Vector3.Zero
                 task.utm_zone = 23
                 task.utm_north = false
             end
-            # The raw values are UTM N/E. Rock is in NWU, so we must convert the
+            # The position samples are UTM N/E. Rock is in NWU, so we must convert the
             # UTM coordinates to NWU
-            assert_in_delta 687394.89, sample.position.x, 10
-            assert_in_delta 7465628.95, sample.position.y, 10
+            assert_equal 'gps_test', sample.sourceFrame
+            assert_equal 'utm_test', sample.targetFrame
+            assert_in_delta 687394, sample.position.x, 1
+            assert_in_delta 7465634, sample.position.y, 1
+        end
+
+        it "converts the position to the configured NWU frame" do
+            sample = read_sample 'gps.world', 'position_samples' do |task|
+                task.gps_frame = 'gps_test'
+                task.nwu_frame = 'nwu_test'
+                task.nwu_origin = Eigen::Vector3.new(7465000, 312000)
+                task.utm_zone = 23
+                task.utm_north = false
+            end
+            # The position samples are UTM N/E. Rock is in NWU, so we must convert the
+            # UTM coordinates to NWU
+            assert_equal 'gps_test', sample.sourceFrame
+            assert_equal 'nwu_test', sample.targetFrame
+            assert_in_delta 634, sample.position.x, 1
+            assert_in_delta 605, sample.position.y, 1
         end
 
         it "exports the realtime instead of the logical time if use_sim_time is false" do
             sample = read_sample 'gps.world', 'gps_solution' do |task|
+                task.use_sim_time = false
+            end
+            diff_t = (Time.now - sample.time)
+            assert(diff_t > 0 && diff_t < 10)
+        end
+
+        it "exports the realtime instead of the logical time if use_sim_time is false" do
+            sample = read_sample 'gps.world', 'position_samples' do |task|
+                task.use_sim_time = false
+            end
+            diff_t = (Time.now - sample.time)
+            assert(diff_t > 0 && diff_t < 10)
+        end
+
+        it "exports the realtime instead of the logical time if use_sim_time is false" do
+            sample = read_sample 'gps.world', 'utm_samples' do |task|
                 task.use_sim_time = false
             end
             diff_t = (Time.now - sample.time)
