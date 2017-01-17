@@ -2,7 +2,13 @@ module RockGazebo
     module Syskit
         module ConfigurationExtension
             ::Robot.config do
+                if Conf.sdf.world_path?
+                    world_path = Conf.sdf.world_path
+                end
                 Conf.sdf = SDF.new
+                if world_path
+                    Conf.sdf.world_path = world_path
+                end
                 Conf.gazebo.use_sim_time = false
             end
 

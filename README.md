@@ -54,7 +54,7 @@ cases you won't have to use them explicitely as the profile-level declaration
 declares all the devices automatically.
 
 The selected world passed to `use_gazebo_world` is a default. It can be
-overriden on the command line with the `--set=sdf.world_file=world_name` option.
+overriden on the command line with the `--set=sdf.world_path=world_name` option.
 
 == Devices bound to the gazebo instance
 
