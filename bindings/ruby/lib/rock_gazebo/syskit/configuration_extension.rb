@@ -3,6 +3,7 @@ module RockGazebo
         module ConfigurationExtension
             ::Robot.config do
                 Conf.sdf = SDF.new
+                Conf.gazebo.use_sim_time = false
             end
 
             # Load a SDF world into the Syskit instance
