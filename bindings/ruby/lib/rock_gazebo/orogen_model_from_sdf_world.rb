@@ -7,17 +7,18 @@ module RockGazebo
     # @param [OroGen::Loaders::Base] loader the oroGen loader that we should use
     #   to create the tasks
     # @return [OroGen::Spec::Deployment]
-    def self.orogen_model_from_sdf_world(name, world, options = Hash.new)
-        options = validate_options options,
-            loader: Orocos.default_loader,
-            period: 0.01
-
-        project = OroGen::Spec::Project.new(options[:loader])
+    def self.orogen_model_from_sdf_world(name, world, loader: Orocos.default_loader, period: 0.1)
+        project = OroGen::Spec::Project.new(loader)
+        project.using_task_library 'logger'
         project.using_task_library 'rock_gazebo'
-        deployment = project.deployment name
+        deployment = project.deployment(name)
+        setup_orogen_model_from_sdf_world(deployment, world, period: 0.1)
+    end
 
-        period = options.fetch(:period)
+    def self.setup_orogen_model_from_sdf_world(deployment, world, period: 0.1)
         deployment.task("gazebo:#{world.name}", "rock_gazebo::WorldTask").
+            periodic(period)
+        deployment.task("gazebo:#{world.name}_Logger", "logger::Logger").
             periodic(period)
         world.each_model do |model|
             deployment.task("gazebo:#{world.name}:#{model.name}", "rock_gazebo::ModelTask").

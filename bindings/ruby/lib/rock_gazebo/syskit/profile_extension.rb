@@ -1,18 +1,13 @@
 module RockGazebo
     module Syskit
         module ProfileExtension
-            # The name of the SDF world we're under
-            #
-            # This is used as the transformer root frame as well
-            #
-            # @return [String]
-            def sdf_world_name
-                if frame = robot.sdf_world_name
-                    frame
-                else
-                    raise SDFNotLoaded, "#{sdf_world_name} called but #use_sdf_model has not been called"
-                end
+            # The globally-loaded SDF model that describes our world
+            def sdf_world
+                @sdf_world ||= (Conf.sdf.get(:world) || SDF::World.empty)
             end
+
+            # The model loaded with #use_sdf_model
+            attr_accessor :sdf_model
 
             # @api private
             #
@@ -25,7 +20,11 @@ module RockGazebo
                     _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([File.join(*path)])
                     full_path = resolved_paths.first
                     if !File.file?(full_path)
-                        raise ArgumentError, "#{File.join(*path)} cannot be resolved to a valid gazebo world"
+                        if File.file?(model_sdf = File.join(full_path, 'model.sdf'))
+                            full_path = model_sdf
+                        else
+                            raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
+                        end
                     end
 
                     models = SDF::Root.load(full_path).each_model.to_a
@@ -38,44 +37,61 @@ module RockGazebo
                 end
             end
 
+            # Setup the transformer based on the given model
+            def use_sdf_model(*path)
+                # This is a guard used by
+                # ConfigurationExtension#use_sdf_world to verify that
+                # it was was called first. Otherwise, devices for the
+                # world models won't be defined and stuff like vizkit3d_world
+                # won't be configured properly
+                Conf.sdf.has_profile_loaded = true
+
+                model = resolve_sdf_model(*path)
+                @sdf_model = model
+                transformer.parse_sdf_model(model)
+                model
+            end
+
+            # Configure the transformer to reflect the SDF environment loaded
+            # using Conf.syskit.use_sdf_world
+            def use_sdf_world
+                world = sdf_world
+                exclude_models = []
+                if sdf_model
+                    exclude_models << sdf_model.name
+                end
+                transformer.parse_sdf_world(world, exclude_models: exclude_models)
+                # There can be only one world ... name it 'world'
+                if !transformer.has_frame?('world')
+                    transformer.static_transform Eigen::Vector3.Zero, world.full_name => 'world'
+                end
+            end
+
             # Sets up this profile, robot and transformer according to the
             # information in the model at "path"
             #
-            # @param [String] world_name the default name for the world. This is
-            #   used only if a SDF world has not been loaded in the global
-            #   configuration with use_gazebo_world. If one has been loaded, the
-            #   world name will be used instead
-            def use_sdf_model(*path, world_name: 'world')
-                # This is a guard used by
-                # ConfigurationExtension#use_gazebo_world to verify that
-                # #use_gazebo_world was called first. Otherwise, devices for the
-                # world models won't be defined and stuff like vizkit3d_world
-                # won't be configured properly
-                Conf.gazebo.has_profile_loaded = true
-
-                model = resolve_sdf_model(*path)
-                transformer.load_sdf(model)
+            # In addition to {#use_sdf_model}, it adds the Gazebo devices that
+            # expose a simulation
+            def use_gazebo_model(*path)
+                model = use_sdf_model(*path)
 
                 # Load the model in the syskit subsystems
-                if Conf.gazebo.world?
-                    world_name = Conf.gazebo.world.full_name
-                    robot.load_sdf(model, world_name: world_name, models: Conf.gazebo.world.each_model.to_a)
+                if Conf.sdf.world?
+                    robot.load_gazebo(model, "gazebo:#{sdf_world.name}", models: Conf.sdf.world.each_model.to_a)
                 else
-                    robot.load_sdf(model, world_name: world_name)
+                    robot.load_gazebo(model, "gazebo:#{sdf_world.name}")
                 end
 
                 if !(device = robot.find_device(model.name))
-                    raise RuntimeError, "cannot resolve device #{model.name}, it should have been created by RobotDefinitionExtension#load_sdf, got #{robot.each_master_device.map(&:name).sort.join(", ")}"
+                    raise RuntimeError, "cannot resolve device #{model.name}, it should have been created by RobotDefinitionExtension#load_gazebo, got #{robot.each_master_device.map(&:name).sort.join(", ")}"
                 end
-                device.frame_transform model.name => world_name
-                transformer.dynamic_transform device, model.name => world_name
+                device.frame_transform model.name => 'world'
 
                 # Declare the transformations that can be generated by the
                 # ModelTask on the transformer
                 model.each_link do |link|
                     if dev = robot.find_device("#{link.name}_link")
-                        dev.frame_transform link.full_name => world_name
-                        transformer.dynamic_transform dev, link.full_name => world_name
+                        dev.frame_transform link.full_name => 'world'
                     else
                         raise ArgumentError, "expected to have a device called #{link.name}_link providing Rock::Devices::Gazebo::Link, but it does not exist. Got #{robot.each_master_device.map(&:name).sort.join(", ")}"
                     end

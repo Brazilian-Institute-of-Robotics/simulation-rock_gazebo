@@ -34,6 +34,7 @@
 #include <rtt/extras/SequentialActivity.hpp>
 #include <rtt/transports/corba/ApplicationServer.hpp>
 #include <rtt/transports/corba/TaskContextServer.hpp>
+#include <rtt/transports/corba/CorbaDispatcher.hpp>
 
 
 using namespace std;
@@ -46,6 +47,10 @@ RockBridge::RockBridge()
 
 RockBridge::~RockBridge()
 {
+    // Deregister the CORBA stuff
+    RTT::corba::TaskContextServer::CleanupServers();
+    RTT::corba::CorbaDispatcher::ReleaseAll();
+
     // Delete pointers to activity
     for(Activities::iterator activity_it = activities.begin();
             activity_it != activities.end(); ++activity_it)
@@ -106,9 +111,10 @@ void RockBridge::worldCreated(string const& worldName)
     // Create the logger component and start the activity
     logger::Logger* logger_task = new logger::Logger();
     logger_task->provides()->setName("gazebo:" + worldName +"_Logger");
-    RTT::corba::TaskContextServer::Create( logger_task );
     // RTT::Activity runs the task in separate thread
     RTT::Activity* logger_activity = new RTT::Activity( logger_task->engine() );
+    RTT::corba::TaskContextServer::Create( logger_task );
+    RTT::corba::CorbaDispatcher::Instance( logger_task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
     logger_activity->start();
     activities.push_back( logger_activity );
     tasks.push_back( logger_task );
@@ -150,6 +156,7 @@ void RockBridge::setupTaskActivity(RTT::TaskContext* task)
 {
     // Export the component interface on CORBA to Ruby access the component
     RTT::corba::TaskContextServer::Create( task );
+    RTT::corba::CorbaDispatcher::Instance( task->ports(), ORO_SCHED_OTHER, RTT::os::LowestPriority );
 
     // Create and start sequential task activities
     RTT::extras::SequentialActivity* activity =
