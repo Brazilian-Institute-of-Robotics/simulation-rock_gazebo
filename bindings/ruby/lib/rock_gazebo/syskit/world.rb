@@ -68,6 +68,23 @@ module RockGazebo
                 @alive = true
             end
 
+            def resolve_all_tasks(cache = Hash.new)
+                # Just access the world task as a cheap check
+                model.task_activities.each do |t|
+                    cache[t.name] ||= task(t.name)
+                end
+                cache
+            rescue Orocos::NotFound
+                @last_error_message ||= Time.now
+                if Time.now - @last_error_message > 5.0
+                    ::Robot.warn "#{name}: waiting for gazebo"
+                    ::Robot.warn "You have to start the simulation via 'rock-gzserver WORLD_FILE'."
+                    @last_error_message = Time.now
+                end
+                nil
+            end
+
+
             # Waits for the tasks to be ready
             #
             # This is a no-op as the tasks get resolved in #spawn
