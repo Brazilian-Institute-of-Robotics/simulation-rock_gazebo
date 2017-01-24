@@ -1,0 +1,9 @@
+<sdf version="1.4">
+<world name="w">
+    <model name="m">
+        <link name="l">
+            <sensor name="i" type="imu" />
+        </link>
+    </model>
+</world>
+</sdf>

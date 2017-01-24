@@ -44,6 +44,9 @@ namespace rock_gazebo
 
             std::vector<gazebo::event::ConnectionPtr> eventHandler;
 
+            template<typename RockTask>
+            void setupSensorTask(ModelPtr model, sdf::ElementPtr sensorElement);
+
             typedef std::vector<RTT::TaskContext*> Tasks;
             Tasks tasks;
             typedef std::vector<RTT::base::ActivityInterface*> Activities;

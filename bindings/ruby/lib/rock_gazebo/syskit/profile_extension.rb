@@ -3,7 +3,7 @@ module RockGazebo
         module ProfileExtension
             # The globally-loaded SDF model that describes our world
             def sdf_world
-                @sdf_world ||= (Conf.sdf.get(:world) || SDF::World.empty)
+                @sdf_world ||= Conf.sdf.world
             end
 
             # The model loaded with #use_sdf_model
@@ -27,7 +27,7 @@ module RockGazebo
                         end
                     end
 
-                    models = SDF::Root.load(full_path).each_model.to_a
+                    models = ::SDF::Root.load(full_path).each_model.to_a
                     if models.size > 1
                         raise ArgumentError, "#{full_path} has more than one top level model, cannot use in use_sdf_model"
                     elsif models.empty?
@@ -76,11 +76,7 @@ module RockGazebo
                 model = use_sdf_model(*path)
 
                 # Load the model in the syskit subsystems
-                if Conf.sdf.world?
-                    robot.load_gazebo(model, "gazebo:#{sdf_world.name}", models: Conf.sdf.world.each_model.to_a)
-                else
-                    robot.load_gazebo(model, "gazebo:#{sdf_world.name}")
-                end
+                robot.load_gazebo(model, "gazebo:#{sdf_world.name}", models: Conf.sdf.world.each_model.to_a)
 
                 if !(device = robot.find_device(model.name))
                     raise RuntimeError, "cannot resolve device #{model.name}, it should have been created by RobotDefinitionExtension#load_gazebo, got #{robot.each_master_device.map(&:name).sort.join(", ")}"

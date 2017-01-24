@@ -34,6 +34,9 @@ module RockGazebo
                 elsif sensor.type == 'imu'
                     deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::ImuTask").
                         periodic(period)
+                elsif sensor.type == 'gps'
+                    deployment.task("gazebo:#{world.name}:#{model.name}:#{sensor.name}", "rock_gazebo::GPSTask").
+                        periodic(period)
                 end
             end
             model.each_plugin do |plugin|

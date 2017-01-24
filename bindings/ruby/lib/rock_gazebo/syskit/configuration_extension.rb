@@ -1,15 +1,26 @@
 module RockGazebo
     module Syskit
         module ConfigurationExtension
+            ::Robot.config do
+                if Conf.sdf.world_path?
+                    world_path = Conf.sdf.world_path
+                end
+                Conf.sdf = SDF.new
+                if world_path
+                    Conf.sdf.world_path = world_path
+                end
+                Conf.gazebo.use_sim_time = false
+            end
+
             # Load a SDF world into the Syskit instance
             def use_sdf_world(*path, world_name: nil)
-                if Conf.sdf.world?
+                if Conf.sdf.world_file_path
                     raise LoadError, "use_sdf_world already called"
                 elsif Conf.sdf.has_profile_loaded?
                     raise LoadError, "you need to call #use_sdf_world before require'ing any profile that uses #use_sdf_model"
                 end
 
-                if Conf.sdf.world_path?
+                if Conf.sdf.world_path
                     override_path = Conf.sdf.world_path
                     Robot.info "world_file_path set on Conf.sdf.world_path with value #{override_path}, overriding the parameter #{File.join(*path)} given to #use_sdf_world"
                     path = override_path
@@ -25,7 +36,7 @@ module RockGazebo
                         raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
                     end
                 end
-                SDF::XML.model_path = Rock::Gazebo.model_path
+                ::SDF::XML.model_path = Rock::Gazebo.model_path
                 world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
                 Conf.sdf.world_file_path = full_path
                 Conf.sdf.world = world
@@ -63,7 +74,7 @@ module RockGazebo
             end
 
             def self.world_from_path(path, world_name: nil)
-                worlds = SDF::Root.load(path).each_world.to_a
+                worlds = ::SDF::Root.load(path).each_world.to_a
                 if world_name
                     world = worlds.find { |w| w.name == world_name }
                     if !world

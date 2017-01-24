@@ -1,0 +1,17 @@
+<sdf version="1.4">
+<world name="w">
+    <spherical_coordinates>
+    <surface_model>WGS-84</surface_model>
+    <latitude_deg>-22.9068</latitude_deg>
+    <longitude_deg>-43.1729</longitude_deg>
+    <elevation>10</elevation>
+    <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name="m">
+        <static>true</static>
+        <link name="l">
+            <sensor name="g" type="gps" />
+        </link>
+    </model>
+</world>
+</sdf>
