@@ -136,6 +136,9 @@ module RockGazebo
                 end
                 model.each_sensor do |s|
                     if device = sensors_to_device(s, "#{s.name}_sensor", s.parent.full_name)
+                        if period = s.update_period
+                            device.period(period)
+                        end
                         device.sdf(s).prefer_deployed_tasks("#{deployment_prefix}:#{name}:#{s.name}")
                     else
                         RockGazebo.warn "Robot#load_gazebo: don't know how to handle sensor #{s.full_name} of type #{s.type}"
