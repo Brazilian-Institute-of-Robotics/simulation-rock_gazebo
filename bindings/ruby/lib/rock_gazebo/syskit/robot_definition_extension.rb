@@ -42,7 +42,7 @@ module RockGazebo
             #   which must match a link, model or frame name on the SDF model
             # @return [Syskit::Robot::MasterDeviceInstance] the exported link as
             #   a device instance of type Rock::Devices::Gazebo::Link
-            def sdf_export_link(model_dev, as: nil, from_frame: nil, to_frame: nil)
+            def sdf_export_link(model_dev, as: nil, from_frame: nil, to_frame: nil, cov_position: nil, cov_orientation: nil, cov_velocity: nil)
                 if !as
                     raise ArgumentError, "provide a name for the device and port through the 'as' option"
                 elsif !from_frame
@@ -54,7 +54,9 @@ module RockGazebo
                 link_driver = model_dev.to_instance_requirements.to_component_model.dup
                 link_driver_m = OroGen::RockGazebo::ModelTask.specialize
                 link_driver_srv = link_driver_m.require_dynamic_service(
-                    'link_export', as: as, frame_basename: as)
+                    'link_export', as: as, frame_basename: as,
+                    cov_position: cov_position, cov_orientation: cov_orientation,
+                    cov_velocity: cov_velocity)
 
                 link_driver.add_models([link_driver_m])
                 link_driver.

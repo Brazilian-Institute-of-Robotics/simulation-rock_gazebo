@@ -4,6 +4,155 @@ describe "The Rock/Gazebo plugin" do
     include Helpers
     include Orocos::Test::Component
 
+    describe "Models" do
+        attr_reader :task
+        before do
+            @task = gzserver 'model.world', '/gazebo:w:m'
+        end
+
+        it "exports the model using a ModelTask" do
+            assert_equal "rock_gazebo::ModelTask", task.model.name
+        end
+
+        def configure_start_and_read_one_sample(port_name)
+            task.configure
+            task.start
+            reader = task.port(port_name).reader
+            assert_has_one_new_sample reader
+        end
+
+        describe "the pose export" do
+            it "exports the pose" do
+                pose = configure_start_and_read_one_sample 'pose_samples'
+                assert Eigen::Vector3.new(1, 2, 3).approx?(pose.position)
+                assert Eigen::Quaternion.from_angle_axis(0.1, Eigen::Vector3.UnitZ).
+                    approx?(pose.orientation)
+            end
+
+            it "sets the model's cov_position from the component's cov_position property" do
+                cov = matrix3_rand
+                task.cov_position = cov
+                pose = configure_start_and_read_one_sample 'pose_samples'
+                assert_matrix3_in_delta cov, pose.cov_position
+            end
+
+            it "sets the model's cov_orientation from the component's cov_orientation property" do
+                cov = matrix3_rand
+                task.cov_orientation = cov
+                pose = configure_start_and_read_one_sample 'pose_samples'
+                assert_matrix3_in_delta cov, pose.cov_orientation
+            end
+
+            it "sets the model's cov_velocity from the component's cov_velocity property" do
+                cov = matrix3_rand
+                task.cov_velocity = cov
+                pose = configure_start_and_read_one_sample 'pose_samples'
+                assert_matrix3_in_delta cov, pose.cov_velocity
+            end
+        end
+
+        describe "the link export" do
+            before do
+            end
+
+            it "exports a link's pose" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    port_period: Time.at(0))]
+                link_pose = configure_start_and_read_one_sample 'test'
+                assert Eigen::Vector3.new(2, 3, 4).approx?(link_pose.position)
+                assert Eigen::Quaternion.from_angle_axis(0.2, Eigen::Vector3.UnitZ).
+                    approx?(link_pose.orientation)
+            end
+
+            it "the pose's update period is controlled by the port_period parameter" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    port_period: Time.at(0.1))]
+                task.configure
+                task.start
+                reader = task.test.reader
+                first_pose = assert_has_one_new_sample(reader)
+                second_pose = assert_has_one_new_sample(reader)
+                assert_in_delta(second_pose.time - first_pose.time, 0.1, 0.025)
+            end
+
+            it "refuses to configure if the source link does not exist" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'does_not_exist', target_link: 'root')]
+                assert_raises(Orocos::StateTransitionFailed) do
+                    task.configure
+                end
+            end
+
+            it "refuses to configure if the target link does not exist" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'does_not_exist')]
+                assert_raises(Orocos::StateTransitionFailed) do
+                    task.configure
+                end
+            end
+
+            it "refuses to configure if the port is already in use" do
+                task.exported_links = [
+                    Types.rock_gazebo.LinkExport.new(
+                        port_name: 'test', source_link: 'l', target_link: 'root'),
+                    Types.rock_gazebo.LinkExport.new(
+                        port_name: 'test', source_link: 'l', target_link: 'root')
+                ]
+                assert_raises(Orocos::StateTransitionFailed) do
+                    task.configure
+                end
+            end
+
+            it "uses the link names as frames by default" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    port_period: Time.at(0))]
+                pose = configure_start_and_read_one_sample 'test'
+                assert_equal 'l', pose.sourceFrame
+                assert_equal 'root', pose.targetFrame
+            end
+
+            it "allows to override the frame names" do
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    source_frame: 'src', target_frame: 'target',
+                    port_period: Time.at(0))]
+                pose = configure_start_and_read_one_sample 'test'
+                assert_equal 'src', pose.sourceFrame
+                assert_equal 'target', pose.targetFrame
+            end
+
+            it "sets cov_position from the provided cov_position" do
+                cov = matrix3_rand
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    cov_position: cov, port_period: Time.at(0))]
+                pose = configure_start_and_read_one_sample 'test'
+                assert_matrix3_in_delta cov, pose.cov_position, 1e-6
+            end
+
+            it "sets cov_orientation from the provided cov_orientation" do
+                cov = matrix3_rand
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    cov_orientation: cov, port_period: Time.at(0))]
+                pose = configure_start_and_read_one_sample 'test'
+                assert_matrix3_in_delta cov, pose.cov_orientation, 1e-6
+            end
+
+            it "sets cov_velocity from the provided cov_velocity" do
+                cov = matrix3_rand
+                task.exported_links = [Types.rock_gazebo.LinkExport.new(
+                    port_name: 'test', source_link: 'l', target_link: 'root',
+                    cov_velocity: cov, port_period: Time.at(0))]
+                pose = configure_start_and_read_one_sample 'test'
+                assert_matrix3_in_delta cov, pose.cov_velocity, 1e-6
+            end
+        end
+    end
+
     describe "IMU sensor" do
         def read_imu_sample(world_file)
             @task = gzserver world_file, '/gazebo:w:m:i'

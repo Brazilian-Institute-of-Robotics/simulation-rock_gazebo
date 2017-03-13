@@ -10,6 +10,11 @@ module Helpers
     end
 
     def teardown
+        if !passed?
+            @gazebo_output.rewind
+            puts @gazebo_output.read
+        end
+
         if @gazebo_pid
             begin
                 Process.kill 'INT', @gazebo_pid
@@ -51,6 +56,17 @@ module Helpers
         @gazebo_output.rewind
         puts @gazebo_output.read
         flunk(message)
+    end
+
+    def matrix3_rand
+        values = (0...9).map { rand.abs }
+        Types.base.Matrix3d.new(data: values)
+    end
+
+    def assert_matrix3_in_delta(expected, actual, delta = 1e-9)
+        9.times do |i|
+            assert_in_delta expected.data[i], actual.data[i], delta, "element #{i} differs by more than #{delta}"
+        end
     end
 end
 
