@@ -55,20 +55,19 @@ RockBridge::~RockBridge()
 {
     // Deregister the CORBA stuff
     RTT::corba::TaskContextServer::CleanupServers();
-    RTT::corba::CorbaDispatcher::ReleaseAll();
-
-    // Delete pointers to activity
-    for(Activities::iterator activity_it = activities.begin();
-            activity_it != activities.end(); ++activity_it)
-    {
-        delete *activity_it;
-    }
 
     // Delete pointers to tasks
     for(Tasks::iterator task_it = tasks.begin();
             task_it != tasks.end(); ++task_it)
     {
         delete *task_it;
+    }
+
+    // Delete pointers to activity
+    for(Activities::iterator activity_it = activities.begin();
+            activity_it != activities.end(); ++activity_it)
+    {
+        delete *activity_it;
     }
 
     RTT::corba::TaskContextServer::ShutdownOrb();
