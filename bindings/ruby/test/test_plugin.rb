@@ -233,38 +233,6 @@ describe "The Rock/Gazebo plugin" do
             assert_equal 2, sample.deviationAltitude
         end
 
-        it "converts the position to the configured UTM frame" do
-            sample = read_sample 'gps.world', 'utm_samples' do |task|
-                task.gps_frame = 'gps_test'
-                task.utm_frame = 'utm_test'
-                task.nwu_origin = Eigen::Vector3.Zero
-                task.utm_zone = 23
-                task.utm_north = false
-            end
-            # The position samples are UTM N/E. Rock is in NWU, so we must convert the
-            # UTM coordinates to NWU
-            assert_equal 'gps_test', sample.sourceFrame
-            assert_equal 'utm_test', sample.targetFrame
-            assert_in_delta 687394, sample.position.x, 1
-            assert_in_delta 7465634, sample.position.y, 1
-        end
-
-        it "converts the position to the configured NWU frame" do
-            sample = read_sample 'gps.world', 'position_samples' do |task|
-                task.gps_frame = 'gps_test'
-                task.nwu_frame = 'nwu_test'
-                task.nwu_origin = Eigen::Vector3.new(7465000, 312000)
-                task.utm_zone = 23
-                task.utm_north = false
-            end
-            # The position samples are UTM N/E. Rock is in NWU, so we must convert the
-            # UTM coordinates to NWU
-            assert_equal 'gps_test', sample.sourceFrame
-            assert_equal 'nwu_test', sample.targetFrame
-            assert_in_delta 634, sample.position.x, 1
-            assert_in_delta 605, sample.position.y, 1
-        end
-
         it "exports the realtime instead of the logical time if use_sim_time is false" do
             sample = read_sample 'gps.world', 'gps_solution' do |task|
                 task.use_sim_time = false
@@ -273,21 +241,125 @@ describe "The Rock/Gazebo plugin" do
             assert(diff_t > 0 && diff_t < 10)
         end
 
-        it "exports the realtime instead of the logical time if use_sim_time is false" do
-            sample = read_sample 'gps.world', 'position_samples' do |task|
-                task.use_sim_time = false
+        describe "UTM conversion" do
+            # For these tests, we move the model outside of the origin so that
+            # we can check the projection parameters
+            #
+            # The resulting lat/long values are as follows:
+            #    latitude   = -22.91582976364718
+            #    longitude  = -43.18264805678904
+            def read_sample(world_file, port_name)
+                super do |task|
+                    task.use_proper_utm_conversion = true
+                    yield task if block_given?
+                end
             end
-            diff_t = (Time.now - sample.time)
-            assert(diff_t > 0 && diff_t < 10)
+
+            it "converts the position to the configured UTM frame" do
+                sample = read_sample 'gps-far-from-origin.world', 'utm_samples' do |task|
+                    task.gps_frame = 'gps_test'
+                    task.utm_frame = 'utm_test'
+                    task.nwu_origin = Eigen::Vector3.Zero
+                    task.utm_zone = 23
+                    task.utm_north = false
+                end
+                # The position samples are UTM N/E. Rock is in NWU, so we must convert the
+                # UTM coordinates to NWU
+                assert_equal 'gps_test', sample.sourceFrame
+                assert_equal 'utm_test', sample.targetFrame
+                assert_in_delta 686382, sample.position.x, 1
+                assert_in_delta 7464646, sample.position.y, 1
+            end
+
+            it "converts the position to the configured NWU frame" do
+                sample = read_sample 'gps-far-from-origin.world', 'position_samples' do |task|
+                    task.gps_frame = 'gps_test'
+                    task.nwu_frame = 'nwu_test'
+                    task.nwu_origin = Eigen::Vector3.new(7465634.13, 312605.41)
+                    task.utm_zone = 23
+                    task.utm_north = false
+                end
+                # The position samples are UTM N/E. Rock is in NWU, so we must convert the
+                # UTM coordinates to NWU
+                assert_equal 'gps_test', sample.sourceFrame
+                assert_equal 'nwu_test', sample.targetFrame
+                assert_in_delta 1012, sample.position.x, 1
+                assert_in_delta 988, sample.position.y, 1
+            end
+
+            it "exports the realtime instead of the logical time if use_sim_time is false" do
+                sample = read_sample 'gps.world', 'position_samples' do |task|
+                    task.use_sim_time = false
+                end
+                diff_t = (Time.now - sample.time)
+                assert(diff_t > 0 && diff_t < 10)
+            end
+
+            it "exports the realtime instead of the logical time if use_sim_time is false" do
+                sample = read_sample 'gps.world', 'utm_samples' do |task|
+                    task.use_sim_time = false
+                end
+                diff_t = (Time.now - sample.time)
+                assert(diff_t > 0 && diff_t < 10)
+            end
         end
 
-        it "exports the realtime instead of the logical time if use_sim_time is false" do
-            sample = read_sample 'gps.world', 'utm_samples' do |task|
-                task.use_sim_time = false
+        describe "Gazebo spherical coordinate conversion" do
+            # For these tests, we move the model outside of the origin so that
+            # we can check the projection parameters
+            #
+            # The resulting lat/long values are as follows:
+            #    latitude   = -22.91582976364718
+            #    longitude  = -43.18264805678904
+            def read_sample(world_file, port_name)
+                super do |task|
+                    task.gps_frame = 'gps_test'
+                    task.utm_frame = 'utm_test'
+                    task.nwu_frame = 'nwu_test'
+                    task.use_proper_utm_conversion = false
+                    task.latitude_origin = Types.base.Angle.new(rad: -22.9068 * Math::PI / 180)
+                    task.longitude_origin = Types.base.Angle.new(rad: -43.1729 * Math::PI / 180)
+                    yield task if block_given?
+                end
             end
-            diff_t = (Time.now - sample.time)
-            assert(diff_t > 0 && diff_t < 10)
+
+            it "converts the position to the configured local frame" do
+                sample = read_sample 'gps-far-from-origin.world', 'utm_samples'
+                # The position samples are UTM N/E. Rock is in NWU, so we must convert the
+                # UTM coordinates to NWU
+                assert_equal 'gps_test', sample.sourceFrame
+                assert_equal 'utm_test', sample.targetFrame
+                assert_in_delta -1000, sample.position.x, 1
+                assert_in_delta 1000, sample.position.y, 1
+            end
+
+            it "converts the position to the local frame" do
+                sample = read_sample 'gps-far-from-origin.world', 'position_samples'
+                # The position samples are UTM N/E. Rock is in NWU, so we must convert the
+                # UTM coordinates to NWU
+                assert_equal 'gps_test', sample.sourceFrame
+                assert_equal 'nwu_test', sample.targetFrame
+                assert_in_delta 1000, sample.position.x, 1
+                assert_in_delta 1000, sample.position.y, 1
+            end
+
+            it "exports the realtime instead of the logical time if use_sim_time is false" do
+                sample = read_sample 'gps.world', 'position_samples' do |task|
+                    task.use_sim_time = false
+                end
+                diff_t = (Time.now - sample.time)
+                assert(diff_t > 0 && diff_t < 10)
+            end
+
+            it "exports the realtime instead of the logical time if use_sim_time is false" do
+                sample = read_sample 'gps.world', 'utm_samples' do |task|
+                    task.use_sim_time = false
+                end
+                diff_t = (Time.now - sample.time)
+                assert(diff_t > 0 && diff_t < 10)
+            end
         end
+
     end
 end
 
