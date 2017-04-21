@@ -26,20 +26,7 @@ module RockGazebo
                     path = override_path
                 end
 
-                path = File.join(*path)
-                _, resolved_paths = Rock::Gazebo.resolve_worldfiles_and_models_arguments([path])
-                full_path = resolved_paths.first
-                if !File.file?(full_path)
-                    if File.file?(model_sdf = File.join(full_path, 'model.sdf'))
-                        full_path = model_sdf
-                    else
-                        raise ArgumentError, "#{path} cannot be resolved to a valid gazebo world"
-                    end
-                end
-                ::SDF::XML.model_path = Rock::Gazebo.model_path
-                world = ConfigurationExtension.world_from_path(full_path, world_name: world_name)
-                Conf.sdf.world_file_path = full_path
-                Conf.sdf.world = world
+                Conf.sdf.load_sdf(*path, world_name: world_name)
             end
 
             # Sets up Syskit to use gazebo configured to use the given world 
