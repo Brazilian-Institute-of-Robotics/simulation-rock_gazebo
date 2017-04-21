@@ -57,7 +57,9 @@ module RockGazebo
         # @return [{SDF::Model=>(RobotVisualization,Orocos::Async::TaskContext)]] a
         #   mapping from a model name to the vizkit3d plugin and task proxy that
         #   represent it
-        def self.setup_scene(scene_path, vizkit3d: Vizkit.vizkit3d_widget)
+        def self.setup_scene(
+            scene_path, vizkit3d: Vizkit.vizkit3d_widget,
+            task_name_mapping: default_task_name_mapping)
             models = Hash.new
             sdf = SDF::Root.load(scene_path)
             world = sdf.each_world.first
@@ -78,10 +80,15 @@ module RockGazebo
 
                 models[model] = setup_model(conf, model, vizkit3d: vizkit3d, dir: File.dirname(scene_path),
                                             frame_name: model.name,
-                                            parent_frame_name: parent_frame_name)
+                                            parent_frame_name: parent_frame_name,
+                                            task_name_mapping: task_name_mapping)
             end
             vizkit3d.setRootFrame('world')
             models
+        end
+
+        def self.default_task_name_mapping
+            lambda { |model| "gazebo:#{model.full_name.gsub('::', ':')}" }
         end
 
         # @api private
@@ -101,7 +108,8 @@ module RockGazebo
         #   plugin and the async task for this model
         def self.setup_model(transformer_conf, model, vizkit3d: Vizkit.vizkit3d_widget, dir: nil,
                              frame_name: model.name,
-                             parent_frame_name: default_parent_frame_name(model))
+                             parent_frame_name: default_parent_frame_name(model),
+                             task_name_mapping: default_task_name_mapping)
             model_viz = Vizkit.default_loader.RobotVisualization
             model_viz.setPluginName(model.full_name)
 
@@ -109,16 +117,17 @@ module RockGazebo
             model_viz.loadFromString(model_only.xml.to_s, 'sdf', dir)
             model_viz.frame = frame_name
 
-            task_name = "gazebo:#{model.full_name.gsub('::', ':')}"
-            puts "listening to #{task_name} for #{model.name}"
-            task_proxy = Orocos::Async.proxy task_name
-            trsf = transformer_conf.dynamic_transform "#{task_name}.pose_samples",
-                frame_name => parent_frame_name
-            vizkit3d.listen_to_transformation_producer(trsf)
-            joints_out = task_proxy.port "joints_samples"
+            if task_name = task_name_mapping[model]
+                puts "listening to #{task_name} for #{model.name}"
+                task_proxy = Orocos::Async.proxy task_name
+                trsf = transformer_conf.dynamic_transform "#{task_name}.pose_samples",
+                    frame_name => parent_frame_name
+                vizkit3d.listen_to_transformation_producer(trsf)
+                joints_out = task_proxy.port "joints_samples"
 
-            joints_out.on_data do |sample|
-                model_viz.updateData(sample)
+                joints_out.on_data do |sample|
+                    model_viz.updateData(sample)
+                end
             end
 
             return model_viz, task_proxy
