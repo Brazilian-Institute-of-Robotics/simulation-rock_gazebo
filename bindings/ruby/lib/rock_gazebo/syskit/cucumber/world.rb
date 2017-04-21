@@ -17,7 +17,7 @@ module RockGazebo
                 end
 
                 # Start a Gazebo instance
-                def gazebo_start(*args, ui: (ENV['CUCUMBER_VIZ'] == '1'), working_directory: Dir.pwd)
+                def gazebo_start(*args, ui: (ENV['CUCUMBER_VIZ'] && ENV['CUCUMBER_VIZ'] != '0'), working_directory: Dir.pwd)
                     if gazebo_running?
                         raise InvalidState, "a Gazebo instance is already running, stop it with {#gazebo_stop} and/or join it with {#gazebo_join}"
                     end
@@ -27,8 +27,12 @@ module RockGazebo
                             model_path, filtered_args = Rock::Gazebo.resolve_worldfiles_and_models_arguments(args)
                             world_file = filtered_args.find { |p| p =~ /\.world$/ }
                             Rock::Gazebo.model_path
+                            if ENV['CUCUMBER_VIZ'] != '1'
+                                extra_options = Shellwords.shellsplit(ENV['CUCUMBER_VIZ'])
+                            end
                             @gazebo_ui_pid = spawn('rock-gazebo-viz', '--no-start', world_file,
                                                    *Rock::Gazebo.model_path.flat_map { |p| ["--model-dir", p] },
+                                                   *extra_options,
                                                    pgroup: 0,
                                                    chdir: working_directory,
                                                    out: tempfile,
