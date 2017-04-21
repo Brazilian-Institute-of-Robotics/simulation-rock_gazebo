@@ -6,6 +6,8 @@ require 'transformer/sdf'
 
 start = true
 env_plugin_name = nil
+viz_frame = nil
+transformer = false
 parser = OptionParser.new do |opt|
     opt.banner = "rock-gazebo-viz [OPTIONS] worldfile"
 
@@ -19,6 +21,14 @@ parser = OptionParser.new do |opt|
 
     opt.on '--env=NAME', String, 'an environment plugin to load in the scene (e.g. Ocean)' do |name|
         env_plugin_name = name
+    end
+
+    opt.on '--viz-frame=NAME', String, 'the visualization frame' do |name|
+        viz_frame = name
+    end
+
+    opt.on '--[no-]transformer', 'whether the transform tree should be displayed' do |flag|
+        transformer = flag
     end
 end
 
@@ -35,5 +45,9 @@ path = path.first
 
 require 'rock_gazebo/viz'
 RockGazebo.viz(path, env: env_plugin_name, start: start)
+Vizkit.vizkit3d_widget.setTransformer(transformer)
+if viz_frame
+    Vizkit.vizkit3d_widget.setVisualizationFrame(viz_frame)
+end
 
 Vizkit.exec
