@@ -57,9 +57,8 @@ module RockGazebo
         # @return [{SDF::Model=>(RobotVisualization,Orocos::Async::TaskContext)]] a
         #   mapping from a model name to the vizkit3d plugin and task proxy that
         #   represent it
-        def self.setup_scene(
-            scene_path, vizkit3d: Vizkit.vizkit3d_widget,
-            task_name_mapping: default_task_name_mapping)
+        def self.setup_scene(scene_path, vizkit3d: Vizkit.vizkit3d_widget,
+                             task_name_mapping: default_task_name_mapping)
             models = Hash.new
             sdf = SDF::Root.load(scene_path)
             world = sdf.each_world.first
@@ -85,6 +84,17 @@ module RockGazebo
             end
             vizkit3d.setRootFrame('world')
             models
+        end
+
+        def self.vizkit3d_update_transforms_from_sdf(scene_path, vizkit3d: Vizkit.vizkit3d_widget)
+            sdf = SDF::Root.load(scene_path)
+            world = sdf.each_world.first
+
+            conf = Transformer::Configuration.new
+            conf.load_sdf(scene_path)
+            conf.rename_frames world.name => 'world'
+            conf.static_transform Eigen::Vector3.Zero, world.name => 'world'
+            vizkit3d.apply_transformer_configuration(conf)
         end
 
         def self.default_task_name_mapping
