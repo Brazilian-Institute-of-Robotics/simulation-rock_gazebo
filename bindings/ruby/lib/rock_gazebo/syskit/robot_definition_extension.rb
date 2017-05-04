@@ -127,7 +127,7 @@ module RockGazebo
                         'link_export', as: "#{l.name}_link", frame_basename: frame_basename)
                     link_driver_m = link_driver_m.to_instance_requirements.
                         prefer_deployed_tasks("#{deployment_prefix}:#{name}").
-                        with_arguments('model_dev' => find_device(name)).
+                        with_arguments(model_dev: find_device(name)).
                         use_frames("#{frame_basename}_source" => l.full_name,
                                    "#{frame_basename}_target" => 'world').
                         select_service(driver_srv)
