@@ -8,11 +8,16 @@ start = true
 env_plugin_name = nil
 viz_frame = nil
 transformer = false
+auto_reload = true
 parser = OptionParser.new do |opt|
     opt.banner = "rock-gazebo-viz [OPTIONS] worldfile"
 
     opt.on '--host HOSTNAME', String, 'the host we should connect to to find the rock_gazebo tasks' do |host|
         Orocos::CORBA.name_service.ip = host
+    end
+
+    opt.on '--auto-reload', 'reload the SDF file automatically on modification' do |host|
+        auto_reload = true
     end
 
     opt.on '--[no-]start', 'do not start the rock_gazebo::ModelTask we need (the default is to start them automatically)' do |host|
@@ -45,6 +50,43 @@ path = path.first
 
 require 'rock_gazebo/viz'
 RockGazebo.viz(path, env: env_plugin_name, start: start)
+
+vizkit3d = Vizkit.vizkit3d_widget
+
+window = Qt::Widget.new
+layout = Qt::VBoxLayout.new(window)
+toolbox = Qt::HBoxLayout.new(window)
+layout.add_layout(toolbox)
+reload_sdf = Qt::PushButton.new "Reload SDF"
+reload_sdf.connect SIGNAL('clicked()') do
+    RockGazebo::Viz.vizkit3d_update_transforms_from_sdf(path)
+end
+toolbox.add_widget(reload_sdf)
+
+current_stat = File.stat(path)
+if auto_reload
+    auto_reload_timer = Qt::Timer.new(window)
+    auto_reload_timer.connect SIGNAL('timeout()') do
+        begin
+            new_stat = File.stat(path)
+        rescue Errno::ENOENT
+        end
+
+        if new_stat && current_stat.mtime != new_stat.mtime
+            begin
+                RockGazebo::Viz.vizkit3d_update_transforms_from_sdf(path)
+            rescue Exception => e
+                Qt::MessageBox.critical window, "Failed to load SDF: #{e.message}"
+            end
+            current_stat = new_stat
+        end
+    end
+    auto_reload_timer.start(50)
+end
+
+layout.add_widget(vizkit3d)
+window.show
+
 Vizkit.vizkit3d_widget.setTransformer(transformer)
 if viz_frame
     Vizkit.vizkit3d_widget.setVisualizationFrame(viz_frame)
